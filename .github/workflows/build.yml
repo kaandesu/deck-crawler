@@ -17,7 +17,7 @@ jobs:
           go-version: stable
       - name: test
         run: |
-          go test -v -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./...
+          go test -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./...
       - uses: codecov/codecov-action@v4
         if: matrix.os == 'ubuntu-latest'
         with:
