@@ -57,7 +57,7 @@ All contributions are welcome! You can start by creating an issue.
 
 ### License
 
-**Dungeon Decks** is licensed under the [MIT License](LICENSE.md).
+**Dungeon Decks** is licensed under the [GNU General Public License v3.0](LICENSE.md).
 
 ### Contact
 
