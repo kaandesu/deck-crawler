@@ -1,6 +1,6 @@
 ## Deck Crawler
 
-**Dungeon Decks** is a unique blend of deck-building and first-person dungeon crawling. Navigate procedurally generated dungeons using a strategic deck of cards to combat enemies, gather loot, and overcome challenges.
+**Deck Crawler** is a unique blend of deck-building and first-person dungeon crawling. Navigate procedurally generated dungeons using a strategic deck of cards to combat enemies, gather loot, and overcome challenges.
 
 🚧 there is noting here yet 🚧
 
@@ -57,7 +57,7 @@ All contributions are welcome! You can start by creating an issue.
 
 ### License
 
-**Dungeon Decks** is licensed under the [GNU General Public License v3.0](LICENSE.md).
+**Deck Crawler** is licensed under the [GNU General Public License v3.0](LICENSE.md).
 
 ### Contact
 
