@@ -1,3 +1,6 @@
 deck-crawler
 .DS_Store
-
+bin/
+dist/
+*log*
+coverage.txt
