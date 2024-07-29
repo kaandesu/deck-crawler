@@ -1,0 +1,4 @@
+- basic ui design
+- creating the borders between the different views (3d view, deck, stats etc)
+- world's simplest main menu
+- thinking about the style and story every once in a during bath or cooking
