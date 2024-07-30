@@ -1,21 +1,65 @@
 package main
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	"errors"
 
-var (
-	BoxModel      *rl.Model = &rl.Model{}
-	WallModel     *rl.Model = &rl.Model{}
-	WallDoorModel *rl.Model = &rl.Model{}
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type ModelType int32
+
+const (
+	Wall ModelType = iota
+	WallDoorway
+	Box
+)
+
+func (scene *Scene3D) AddModel(modelType ModelType, modelName string, pos, rot rl.Vector3, scale float32) error {
+	var (
+		found = false
+		path  = ""
+	)
+
+	if _, e := scene.Items[modelName]; e {
+		return errors.New("model.go: same key already exists: " + modelName)
+	}
+	switch modelType {
+	case Wall:
+		path = "./res/gltf/wall.gltf"
+		found = true
+	case WallDoorway:
+		path = "./res/gltf/wall_doorway.gltf"
+		found = true
+	case Box:
+		path = "./res/gltf/box_large.gltf"
+		found = true
+	}
+	if !found {
+		return errors.New("model key not found")
+	}
+
+	temp := rl.LoadModel(path)
+	temp.Transform = rl.MatrixRotateXYZ(rot)
+	scene.Items[modelName] = &SceneItem{
+		model: temp,
+		pos:   pos,
+		rot:   rot,
+		scale: scale,
+	}
+	return nil
+}
+
+func SetupModels() {
+	var (
+		z         = rl.NewVector3(0, 0, 0)
+		s float32 = 2.2
+	)
+	ViewportState.AddModel(WallDoorway, "door1", rl.NewVector3(0, -3, -10), z, s)
+	// TODO: add a id system, something like wall#123
+	ViewportState.AddModel(Wall, "wall1", rl.NewVector3(-4, 0, 0), z, s)
+	ViewportState.AddModel(Wall, "wall2", rl.NewVector3(4, 0, 0), z, s)
+}
+
 func LoadModels() {
-	boxModel := rl.LoadModel("./res/gltf/box_large.gltf")
-	wallModel := rl.LoadModel("./res/gltf/wall.gltf")
-	wallDoorModel := rl.LoadModel("./res/gltf/wall_doorway.gltf")
-
-	WallModel = &wallModel
-	WallDoorModel = &wallDoorModel
-	BoxModel = &boxModel
-
-	WallModel.Transform = rl.MatrixRotateXYZ(rl.NewVector3(0, 90, 0))
+	SetupModels()
 }

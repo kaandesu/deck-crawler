@@ -1,35 +1,15 @@
 package main
 
 import (
-	"image/color"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const (
-	padding   = 10
-	roundness = 0.1
-)
-
-type Screen struct {
-	title  string
-	width  int32
-	height int32
-	fps    int32
-}
-
-type Style struct {
-	bg      color.RGBA
-	primary color.RGBA
-	accent  color.RGBA
-	padding float32
-}
-
 var GameStyle = &Style{
-	bg:      rl.NewColor(14, 17, 19, 255),
-	primary: rl.NewColor(200, 200, 200, 255),
-	accent:  rl.NewColor(200, 200, 0, 255),
-	padding: 20,
+	bg:        rl.NewColor(50, 50, 50, 255),
+	primary:   rl.NewColor(200, 200, 200, 255),
+	accent:    rl.NewColor(200, 200, 0, 255),
+	padding:   20,
+	roundness: 0.1,
 }
 
 var GameScreen = &Screen{
@@ -39,23 +19,33 @@ var GameScreen = &Screen{
 	fps:    60,
 }
 
-type State struct {
-	camera  *Camera
-	running bool
-}
-
 var GameState = &State{
 	running: true,
 	camera:  NewCamera(),
+}
+
+var ViewportState = &Scene3D{
+	Items: make(map[string]*SceneItem),
 }
 
 var button bool
 
 func drawScene() {
 	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
-	rl.BeginScissorMode(int32(GameStyle.padding), int32(GameStyle.padding), (GameScreen.width-int32(GameStyle.padding))/2, GameScreen.height/2)
-	GameState.render3DViewport()
-	rl.EndScissorMode()
+	draw3DViewport()
+}
+
+func main() {
+	server := NewServer(":3000")
+	go server.Start()
+	defer quit()
+	setup()
+
+	for GameState.running {
+		input()
+		update()
+		render()
+	}
 }
 
 func input() {
@@ -81,14 +71,5 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-}
-
-func main() {
-	defer quit()
-	setup()
-	for GameState.running {
-		input()
-		update()
-		render()
-	}
+	LoadModels()
 }
