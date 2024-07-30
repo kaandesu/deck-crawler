@@ -26,7 +26,7 @@ type Style struct {
 }
 
 var GameStyle = &Style{
-	bg:      rl.NewColor(100, 100, 100, 255),
+	bg:      rl.NewColor(14, 17, 19, 255),
 	primary: rl.NewColor(200, 200, 200, 255),
 	accent:  rl.NewColor(200, 200, 0, 255),
 	padding: 20,
@@ -52,8 +52,8 @@ var GameState = &State{
 var button bool
 
 func drawScene() {
-	// rl.DrawRectangleRoundedLines(rl.NewRectangle(float32(GameScreen.width)/2, GameStyle.padding, float32(GameScreen.width)/2-GameStyle.padding, float32(GameScreen.width)/2-GameStyle.padding), 0.1, 0, 1, GameStyle.accent)
-	rl.BeginScissorMode(0, 0, GameScreen.width/2, GameScreen.height/2)
+	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
+	rl.BeginScissorMode(int32(GameStyle.padding), int32(GameStyle.padding), (GameScreen.width-int32(GameStyle.padding))/2, GameScreen.height/2)
 	GameState.render3DViewport()
 	rl.EndScissorMode()
 }

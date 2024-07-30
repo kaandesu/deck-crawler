@@ -12,14 +12,17 @@ func (gs *State) camera3DInit() {
 	})
 }
 
+const (
+	wallH = 9
+)
+
 func (gs *State) render3DViewport() {
-	rl.ClearBackground(rl.RayWhite)
+	rl.ClearBackground(rl.SkyBlue)
 	gs.camera3DInit()
-	rl.DrawCube(rl.NewVector3(0, 0, 0), 2, 2, 2, rl.Red)
-	rl.DrawCube(rl.NewVector3(4, 0, 0), 2, 2, 2, rl.Green)
-	rl.DrawCube(rl.NewVector3(-4, 0, 0), 2, 2, 2, rl.Blue)
-	rl.DrawCube(rl.NewVector3(0, 0, 4), 2, 2, 2, rl.Yellow)
-	rl.DrawCube(rl.NewVector3(0, 0, -4), 2, 2, 2, rl.Purple)
-	rl.DrawGrid(10, 1.0)
+	rl.DrawPlane(rl.NewVector3(0, wallH/-2, 0), rl.NewVector2(32, 32), rl.DarkBrown)
+	rl.DrawCube(rl.NewVector3(4, 0, 0), 0.2, wallH, 20, rl.DarkGray)
+	rl.DrawCube(rl.NewVector3(-4, 0, 0), 0.2, wallH, 20, rl.DarkPurple)
+	rl.DrawCube(rl.NewVector3(0, 0, -10), 9, wallH, 0.2, rl.DarkBlue)
+	rl.DrawGrid(50, 0)
 	rl.EndMode3D()
 }
