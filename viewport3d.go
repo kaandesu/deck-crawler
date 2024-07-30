@@ -20,9 +20,11 @@ func (gs *State) render3DViewport() {
 	rl.ClearBackground(rl.SkyBlue)
 	gs.camera3DInit()
 	rl.DrawPlane(rl.NewVector3(0, wallH/-2, 0), rl.NewVector2(32, 32), rl.DarkBrown)
-	rl.DrawCube(rl.NewVector3(4, 0, 0), 0.2, wallH, 20, rl.DarkGray)
-	rl.DrawCube(rl.NewVector3(-4, 0, 0), 0.2, wallH, 20, rl.DarkPurple)
-	rl.DrawCube(rl.NewVector3(0, 0, -10), 9, wallH, 0.2, rl.DarkBlue)
+	rl.DrawModel(WallDoorModel, rl.NewVector3(0, -3, -10), 2.2, rl.White)
+
+	rl.DrawModel(*WallModel, rl.NewVector3(-4, 0, 0), 2.2, rl.DarkGray)
+	rl.DrawModel(*WallModel, rl.NewVector3(4, 0, 0), 2.2, rl.DarkGray)
+
 	rl.DrawGrid(50, 0)
 	rl.EndMode3D()
 }

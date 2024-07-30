@@ -21,7 +21,7 @@ func MoveCam(cam *Camera, direction rl.Vector3) {
 }
 
 func UpdateCam(cam *Camera, deltaTime float32) {
-	moveSpeed := deltaTime * 1.0
+	moveSpeed := deltaTime * 5.0
 	front := rl.Vector3Subtract(cam.Target, cam.Position)
 	front = rl.Vector3Normalize(front)
 	front.X *= moveSpeed
