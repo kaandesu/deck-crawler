@@ -20,8 +20,9 @@ var GameScreen = &Screen{
 }
 
 var GameState = &State{
-	running: true,
-	camera:  NewCamera(),
+	running:  true,
+	camera:   NewCamera(),
+	editMode: false,
 }
 
 var ViewportState = &Scene3D{
@@ -49,7 +50,7 @@ func main() {
 }
 
 func input() {
-	rl.UpdateCamera(GameState.camera, rl.CameraFirstPerson)
+	// rl.UpdateCamera(GameState.camera, rl.CameraFirstPerson)
 }
 
 func update() {

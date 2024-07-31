@@ -1,7 +1,5 @@
 github.com/ebitengine/purego v0.7.1 h1:6/55d26lG3o9VCZX8lping+bZcmShseiqlh2bnUDiPA=
 github.com/ebitengine/purego v0.7.1/go.mod h1:ah1In8AOtksoNK6yk5z1HTJeUkC1Ez4Wk2idgGslMwQ=
-github.com/gen2brain/raylib-go/raygui v0.0.0-20240628125141-62016ee92fc0 h1:52hdIMv5YfeRi8+3b2f+AJPGQYl+pXHbM52DCUMYiDA=
-github.com/gen2brain/raylib-go/raygui v0.0.0-20240628125141-62016ee92fc0/go.mod h1:Ra1zgJP7vnGst+STvzPPiVJhjicklFWONCz5nu6MnOM=
 github.com/gen2brain/raylib-go/raylib v0.0.0-20240628125141-62016ee92fc0 h1:mhWZabwn9WvzqMBgiuW8ewuQ4Zg+PfW+XbNnTtIX1FY=
 github.com/gen2brain/raylib-go/raylib v0.0.0-20240628125141-62016ee92fc0/go.mod h1:BaY76bZk7nw1/kVOSQObPY1v1iwVE1KHAGMfvI6oK1Q=
 golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 h1:2dVuKD2vS7b0QIHQbpyTISPd0LeHDbnYEryqj5Q1ug8=

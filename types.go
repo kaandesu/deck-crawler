@@ -22,8 +22,9 @@ type Style struct {
 }
 
 type State struct {
-	camera  *Camera
-	running bool
+	camera   *Camera
+	running  bool
+	editMode bool
 }
 
 type SceneItem struct {

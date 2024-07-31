@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type (
@@ -75,17 +77,33 @@ func (s *Server) acceptLoop() {
 }
 
 func (s *Server) handleConn(con net.Conn) {
-	defer con.Close()
+	defer func() {
+		// WARN: temp solution
+		GameState.editMode = false
+		con.Close()
+	}()
+
 	buf := make([]byte, 1024)
 	editor := &Editor{
 		con:  con,
 		addr: con.RemoteAddr().String(),
 	}
 	s.editorsOnline[editor.addr] = editor
+
+	GameState.editMode = true
+
+	con.Write([]byte("\n-----------\n"))
+	for i := range ViewportState.Items {
+		con.Write([]byte(i + "\n"))
+	}
+	con.Write([]byte("\n-----------\n"))
+
 	for {
 		n, err := con.Read(buf)
 		if err != nil {
 			fmt.Printf("[%s] has disconnected \n", editor.addr)
+			// TODO: remove editor from the map
+			// if there are no editors change the editorMode to false
 			break
 		}
 
@@ -95,6 +113,8 @@ func (s *Server) handleConn(con net.Conn) {
 		}
 	}
 }
+
+func (s *Server) awijfiweojf() {}
 
 func (s *Server) handleMessage() {
 	for msg := range s.msgch {
@@ -108,17 +128,16 @@ func (s *Server) handleMessage() {
 		item, e := ViewportState.Items[string(modelName)]
 		_ = item
 		if !e {
-			fmt.Printf("name not found: %s \n", modelName)
-			return
+			errMsg := fmt.Sprintf("name not found: %s \n", modelName)
+			fmt.Print(errMsg)
+			msg.from.con.Write([]byte(errMsg))
+			continue
 		}
 
-		s2 := strings.ReplaceAll(string(values), "\n", "")
-		s, _ := strconv.Atoi(string(s2))
+		sanitizedName := strings.ReplaceAll(string(values), "\n", "")
+		s, _ := strconv.Atoi(string(sanitizedName))
 
-		fmt.Printf("We GOT: %+v | %+v \n", modelName, values)
-		fmt.Printf("We did GOT: %+v | %+v | %+v \n", s, float32(s), s2)
-		// item.model.Transform = rl.MatrixRotateXYZ(rl.NewVector3(float32(s), 0, 0))
-
-		// TODO: modelname + x y z + angleX angleY angleZ
+		fmt.Printf("Updating %s...\n", sanitizedName)
+		item.model.Transform = rl.MatrixRotateXYZ(rl.NewVector3(0, float32(s), 0))
 	}
 }

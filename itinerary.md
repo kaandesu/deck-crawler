@@ -21,3 +21,7 @@ NOTES:
   - attack
   - defence
   - get stunned for a round
+
+  CURRENT TODOS:
+
+  - make state,style,viewport all part of the "game engine"
