@@ -54,7 +54,7 @@ func NewLogger(filename string) *log.Logger {
 func NewServer(addr string) *Server {
 	return &Server{
 		addr:          addr,
-		msgch:         make(chan Message, 10),
+		msgch:         make(chan Message, 100),
 		editorsOnline: make(map[string]*Editor, 10),
 		quitch:        make(chan struct{}),
 		logger:        NewLogger("./editor.log"),
@@ -108,11 +108,7 @@ func (s *Server) handleConn(con net.Conn) {
 
 	GameState.editMode = true
 
-	con.Write([]byte("\n-----Item List------\n"))
-	for i := range ViewportState.Items {
-		con.Write([]byte(i + "\n"))
-	}
-	con.Write([]byte("--------------------\n"))
+	ViewportState.listItems(con)
 
 	for {
 		n, err := con.Read(buf)
@@ -127,52 +123,90 @@ func (s *Server) handleConn(con net.Conn) {
 	}
 }
 
+func (s *Scene3D) listItems(con net.Conn) {
+	con.Write([]byte("\n-----Item List------\n"))
+	for i := range ViewportState.Items {
+		con.Write([]byte(i + "\n"))
+	}
+	con.Write([]byte("--------------------\n"))
+}
+
 func (s *Server) handleMessage() {
 	for msg := range s.msgch {
 
-		modelName := string(msg.payload[:len(msg.payload)-1])
-		item, e := ViewportState.Items[string(modelName)]
+		input := string(msg.payload[:len(msg.payload)-1])
+		item, e := ViewportState.Items[string(input)]
 		_ = item
 
-		if !e {
-			errMsg := fmt.Sprintf("name not found: %s \n", modelName)
-			fmt.Print(errMsg)
-			msg.from.con.Write([]byte(errMsg))
+		switch {
+		case Matches(msg.payload.String(), keys.Back):
+			if msg.from.editContext.modelName == "" {
+				msg.from.con.Write([]byte("to quite type 'q' or 'quit' \n"))
+			}
+
+			if msg.from.editContext.modelName != "" {
+				if msg.from.editContext.mode != Cancel {
+					msg.from.editContext.mode = Cancel
+					msg.from.askAttr()
+				} else {
+					msg.from.editContext.modelName = ""
+					ViewportState.listItems(msg.from.con)
+					msg.from.con.Write([]byte("enter item name: "))
+				}
+			}
+			fmt.Println("back")
+			continue
+		case Matches(msg.payload.String(), keys.Quit):
+			msg.from.con.Close()
+			fmt.Println("editor quit")
+			continue
+		case Matches(msg.payload.String(), keys.Save):
+			fmt.Println("save")
 			continue
 		}
 
-		if msg.from.editContext.modelName == "" {
-			msg.from.editContext.modelName = string(modelName)
+		switch {
+		case msg.from.editContext.modelName == "" && !e:
+			errMsg := fmt.Sprintf("name not found: %s \n", input)
+			fmt.Print(errMsg)
+			msg.from.con.Write([]byte(errMsg))
+
+		case msg.from.editContext.modelName == "":
+			msg.from.editContext.modelName = string(input)
 			msg.from.askAttr()
-			return
-		}
 
-		if msg.from.editContext.mode == Cancel {
-
+		case msg.from.editContext.mode == Cancel:
 			mode, err := msg.payload.parseEditMode()
 			if err != nil {
 				fmt.Println(err)
 				msg.from.con.Write([]byte("invalid mode"))
-				return
+				break
 			}
 
-			fmt.Println(mode)
-
+			msg.from.editContext.mode = mode
 			switch mode {
 			case EditPos:
-				msg.from.con.Write([]byte("edit"))
+				msg.from.con.Write([]byte("pos edit"))
 			case EditRot:
+				msg.from.con.Write([]byte("rot edit"))
 			case EditScale:
+				msg.from.con.Write([]byte("scale edit"))
 			case ToggleModel:
+				msg.from.con.Write([]byte("toggle model"))
 			case DeleteModel:
+				msg.from.con.Write([]byte("delete model"))
 			case Cancel:
+				msg.from.con.Write([]byte("canceled"))
 			default:
-
+				msg.from.con.Write([]byte("you shouldn't see this message i think"))
 			}
-			return
 		}
 
-		// item.model.Transform = rl.MatrixRotateXYZ(rl.NewVector3(0, float32(s), 0))
+		// if input == "e" || input == "exit" {
+		// 	msg.from.editContext.mode = Cancel
+		// 	msg.from.askAttr()
+		// }
+
 	}
 }
 
@@ -180,14 +214,14 @@ func (payload msgPayload) parseEditMode() (EditMode, error) {
 	if len(payload) == 0 {
 		return -1, fmt.Errorf("payload is empty")
 	}
-	b := payload[0]
+	b := payload[0] - 49 // ascii 0 is 48, but i do 1 index
 	if b >= byte(EditRot) && b <= byte(Cancel) {
 		return EditMode(b), nil
 	}
 	return -1, fmt.Errorf("invalid byte for EditMode: %v", b)
 }
 
-func sanitize(data []byte) string {
+func (data msgPayload) String() string {
 	return string(data[:len(data)-1])
 }
 
@@ -199,7 +233,7 @@ func (input EditMode) validate() error {
 }
 
 func (e *Editor) askAttr() {
-	temp := []string{"rotation", "position", "scale", "hide model", "delete model"}
+	temp := []string{"rotation", "position", "scale", "hide model", "delete model", "cancel"}
 	for i, cmd := range temp {
 		fmt.Fprintf(e.con, "[%d] - %s \n", i+1, cmd)
 	}
