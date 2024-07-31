@@ -1,25 +1,37 @@
 package main
 
 import (
-	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"os"
-	"strconv"
-	"strings"
+)
 
-	rl "github.com/gen2brain/raylib-go/raylib"
+type EditMode int32
+
+const (
+	EditRot EditMode = iota
+	EditPos
+	EditScale
+	ToggleModel
+	DeleteModel
+	Cancel
 )
 
 type (
-	Editor struct {
-		con  net.Conn
-		addr string
+	msgPayload []byte
+	Editor     struct {
+		con         net.Conn
+		addr        string
+		editContext struct {
+			modelName string
+			mode      EditMode
+		}
 	}
 	Message struct {
 		from    *Editor
-		payload []byte
+		payload msgPayload
 	}
 	Server struct {
 		quitch        chan struct{}
@@ -43,7 +55,7 @@ func NewServer(addr string) *Server {
 	return &Server{
 		addr:          addr,
 		msgch:         make(chan Message, 10),
-		editorsOnline: make(map[string]*Editor),
+		editorsOnline: make(map[string]*Editor, 10),
 		quitch:        make(chan struct{}),
 		logger:        NewLogger("./editor.log"),
 	}
@@ -78,8 +90,11 @@ func (s *Server) acceptLoop() {
 
 func (s *Server) handleConn(con net.Conn) {
 	defer func() {
-		// WARN: temp solution
-		GameState.editMode = false
+		delete(s.editorsOnline, con.RemoteAddr().String())
+		fmt.Printf("[%s] has disconnected \n", con.RemoteAddr().String())
+		if len(s.editorsOnline) == 0 {
+			GameState.editMode = false
+		}
 		con.Close()
 	}()
 
@@ -88,22 +103,20 @@ func (s *Server) handleConn(con net.Conn) {
 		con:  con,
 		addr: con.RemoteAddr().String(),
 	}
+	editor.editContext.mode = Cancel
 	s.editorsOnline[editor.addr] = editor
 
 	GameState.editMode = true
 
-	con.Write([]byte("\n-----------\n"))
+	con.Write([]byte("\n-----Item List------\n"))
 	for i := range ViewportState.Items {
 		con.Write([]byte(i + "\n"))
 	}
-	con.Write([]byte("\n-----------\n"))
+	con.Write([]byte("--------------------\n"))
 
 	for {
 		n, err := con.Read(buf)
 		if err != nil {
-			fmt.Printf("[%s] has disconnected \n", editor.addr)
-			// TODO: remove editor from the map
-			// if there are no editors change the editorMode to false
 			break
 		}
 
@@ -114,19 +127,13 @@ func (s *Server) handleConn(con net.Conn) {
 	}
 }
 
-func (s *Server) awijfiweojf() {}
-
 func (s *Server) handleMessage() {
 	for msg := range s.msgch {
-		modelName, values, found := bytes.Cut(msg.payload, []byte{'-'})
-		_ = modelName
-		_ = values
 
-		if !found {
-			continue
-		}
+		modelName := string(msg.payload[:len(msg.payload)-1])
 		item, e := ViewportState.Items[string(modelName)]
 		_ = item
+
 		if !e {
 			errMsg := fmt.Sprintf("name not found: %s \n", modelName)
 			fmt.Print(errMsg)
@@ -134,10 +141,66 @@ func (s *Server) handleMessage() {
 			continue
 		}
 
-		sanitizedName := strings.ReplaceAll(string(values), "\n", "")
-		s, _ := strconv.Atoi(string(sanitizedName))
+		if msg.from.editContext.modelName == "" {
+			msg.from.editContext.modelName = string(modelName)
+			msg.from.askAttr()
+			return
+		}
 
-		fmt.Printf("Updating %s...\n", sanitizedName)
-		item.model.Transform = rl.MatrixRotateXYZ(rl.NewVector3(0, float32(s), 0))
+		if msg.from.editContext.mode == Cancel {
+
+			mode, err := msg.payload.parseEditMode()
+			if err != nil {
+				fmt.Println(err)
+				msg.from.con.Write([]byte("invalid mode"))
+				return
+			}
+
+			fmt.Println(mode)
+
+			switch mode {
+			case EditPos:
+				msg.from.con.Write([]byte("edit"))
+			case EditRot:
+			case EditScale:
+			case ToggleModel:
+			case DeleteModel:
+			case Cancel:
+			default:
+
+			}
+			return
+		}
+
+		// item.model.Transform = rl.MatrixRotateXYZ(rl.NewVector3(0, float32(s), 0))
+	}
+}
+
+func (payload msgPayload) parseEditMode() (EditMode, error) {
+	if len(payload) == 0 {
+		return -1, fmt.Errorf("payload is empty")
+	}
+	b := payload[0]
+	if b >= byte(EditRot) && b <= byte(Cancel) {
+		return EditMode(b), nil
+	}
+	return -1, fmt.Errorf("invalid byte for EditMode: %v", b)
+}
+
+func sanitize(data []byte) string {
+	return string(data[:len(data)-1])
+}
+
+func (input EditMode) validate() error {
+	if input < EditRot || input > Cancel {
+		return errors.New("invalid EditMode value")
+	}
+	return nil
+}
+
+func (e *Editor) askAttr() {
+	temp := []string{"rotation", "position", "scale", "hide model", "delete model"}
+	for i, cmd := range temp {
+		fmt.Fprintf(e.con, "[%d] - %s \n", i+1, cmd)
 	}
 }

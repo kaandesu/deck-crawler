@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -25,7 +23,7 @@ func (gs *State) camera3DInit() {
 	if !gs.editMode {
 		rl.BeginMode3D(cam)
 	} else {
-		fmt.Println("Editor deceted: CameraPerspective -> CameraOrthographic")
+		// fmt.Println("Editor deceted: CameraPerspective -> CameraOrthographic")
 		rl.BeginMode3D(camOrt)
 	}
 }
