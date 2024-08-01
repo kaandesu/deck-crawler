@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -29,7 +31,7 @@ var ViewportState = &Scene3D{
 	Items: make(map[string]*SceneItem),
 }
 
-var button bool
+var enableEditorServer = flag.Bool("server", false, "enable editor server")
 
 func drawScene() {
 	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
@@ -37,8 +39,11 @@ func drawScene() {
 }
 
 func main() {
-	server := NewServer(":3000")
-	go server.Start()
+	flag.Parse()
+	if *enableEditorServer {
+		server := NewServer(":3000")
+		go server.Start()
+	}
 	defer quit()
 	setup()
 
@@ -50,7 +55,8 @@ func main() {
 }
 
 func input() {
-	// rl.UpdateCamera(GameState.camera, rl.CameraFirstPerson)
+	// rl.UpdateCamera(GameState.camera, rl.CameraFree)
+	UpdateCam(GameState.camera, 0.5)
 }
 
 func update() {

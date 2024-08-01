@@ -18,7 +18,7 @@ func (gs *State) camera3DInit() {
 		Target:     gs.camera.Target,
 		Up:         gs.camera.Up,
 		Fovy:       gs.camera.Fovy,
-		Projection: rl.CameraOrthographic,
+		Projection: rl.CameraPerspective,
 	}
 	if !gs.editMode {
 		rl.BeginMode3D(cam)
@@ -48,7 +48,12 @@ func (gs *State) render3DViewport() {
 }
 
 func draw3DViewport() {
-	rl.BeginScissorMode(int32(GameStyle.padding), int32(GameStyle.padding), (GameScreen.width-int32(GameStyle.padding))/2, GameScreen.height/2)
+	if GameState.editMode {
+		rl.BeginScissorMode(0, 0, GameScreen.width, GameScreen.height)
+	} else {
+		rl.BeginScissorMode(int32(GameStyle.padding), int32(GameStyle.padding), (GameScreen.width-int32(GameStyle.padding))/2, GameScreen.height/2)
+	}
+
 	GameState.render3DViewport()
 	rl.EndScissorMode()
 }
