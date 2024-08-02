@@ -233,7 +233,7 @@ func (s *Server) handleMessage() {
 					ViewportState.Items[msg.from.editContext.modelName].pos = rl.NewVector3(float32(v1), float32(v2), float32(v3))
 				case EditRot:
 					if len(vals) != 3 {
-						msg.from.con.Write([]byte("not enough arguments, need 3\n"))
+						msg.from.con.Write([]byte("invalid number of arguments, need 3\n"))
 						break
 					}
 					msg.from.con.Write([]byte("Rotation: "))
@@ -243,23 +243,29 @@ func (s *Server) handleMessage() {
 					v := rl.NewVector3(float32(v1), float32(v2), float32(v3))
 					ViewportState.Items[msg.from.editContext.modelName].model.Transform = rl.MatrixRotateXYZ(v)
 				case EditScale:
+					if len(vals) != 1 {
+						msg.from.con.Write([]byte("invalid number of arguments, need 1\n"))
+						break
+					}
+					v1, _ := strconv.ParseFloat(vals[0], 32)
+					ViewportState.Items[msg.from.editContext.modelName].scale = float32(v1)
 					msg.from.con.Write([]byte("scale edit"))
 				case ResetChanges:
 					msg.from.con.Write([]byte("reset all changes"))
-				case ToggleModel:
-					msg.from.con.Write([]byte("toggle model"))
 				case DeleteModel:
-					msg.from.con.Write([]byte("delete model"))
 					if input[0] == 'y' || input == "yes" {
-						// TODO: delete model here
-						fmt.Fprint(msg.from.con, "[DELETE NOT IMPLEMENTED] \n")
+						delete(ViewportState.Items, msg.from.editContext.modelName)
+						msg.from.editContext.mode = Cancel
+						msg.from.editContext.modelName = ""
+						fmt.Fprint(msg.from.con, "Model deleted... \n")
 					} else {
 						fmt.Fprint(msg.from.con, "Canceled...\n")
+						msg.from.editContext.mode = Cancel
 					}
 				case Cancel:
-					msg.from.con.Write([]byte("canceled"))
+					msg.from.con.Write([]byte("Canceled...\n"))
 				default:
-					msg.from.con.Write([]byte("you shouldn't see this message i think"))
+					msg.from.con.Write([]byte("\n\n\nif you see this message, please create an issue\n\n\n"))
 				}
 			}
 		}
@@ -292,7 +298,7 @@ func (input EditMode) validate() error {
 func (e *Editor) askAttr() {
 	temp := []string{"rotation", "position", "scale", "reset", "hide model", "delete model", "cancel"}
 	el := ViewportState.Items[e.editContext.modelName]
-	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Hidden:%+v\n", e.editContext.modelName, el.pos, el.pos, el.scale, el.hidden)
+	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Visible:%+v\n", e.editContext.modelName, el.pos, el.pos, el.scale, el.hidden)
 	for i, cmd := range temp {
 		fmt.Fprintf(e.con, "[%d] - %s \n", i+1, cmd)
 	}
