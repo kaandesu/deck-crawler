@@ -18,6 +18,7 @@ const (
 	EditRot EditMode = iota
 	EditPos
 	EditScale
+	ResetChanges
 	ToggleModel
 	DeleteModel
 	Cancel
@@ -143,22 +144,36 @@ func (s *Server) handleMessage() {
 
 			if msg.from.editContext.modelName != "" {
 				if msg.from.editContext.mode != Cancel {
-					msg.from.editContext.mode = Cancel
-					msg.from.askAttr()
+					msg.from.resetEditMode()
 				} else {
 					msg.from.editContext.modelName = ""
 					ViewportState.listItems(msg.from.con)
 					msg.from.con.Write([]byte("enter item name: "))
 				}
 			}
-			fmt.Println("back")
+			fmt.Println("editor - back")
 			continue
 		case Matches(msg.payload.String(), keys.Quit):
 			msg.from.con.Close()
-			fmt.Println("editor quit")
+			fmt.Println("editor - quit")
 			continue
 		case Matches(msg.payload.String(), keys.Save):
-			fmt.Println("save")
+			fmt.Println("save is not implemented")
+			continue
+		case Matches(msg.payload.String(), keys.Help):
+			fmt.Println("help is not implemented")
+			continue
+		case Matches(msg.payload.String(), keys.FullScreen):
+			GameState.editFull = !GameState.editFull
+			continue
+		case Matches(msg.payload.String(), keys.CycleCamMode):
+			if GameState.camMode == rl.CameraFirstPerson {
+				GameState.camMode = rl.CameraThirdPerson
+				fmt.Println("switched cam mode: third")
+			} else {
+				GameState.camMode = rl.CameraFirstPerson
+				fmt.Println("switched cam mode: first")
+			}
 			continue
 		}
 
@@ -181,17 +196,24 @@ func (s *Server) handleMessage() {
 			}
 
 			msg.from.editContext.mode = mode
+			// NOTE: after item selection
 			switch msg.from.editContext.mode {
 			case EditPos:
-				msg.from.con.Write([]byte("Position: "))
+				fmt.Fprintf(msg.from.con, "Poisiton (%+v):", ViewportState.Items[msg.from.editContext.modelName].pos)
 			case EditRot:
-				msg.from.con.Write([]byte("Rotation: "))
+				fmt.Fprintf(msg.from.con, "Rotation (%+v):", ViewportState.Items[msg.from.editContext.modelName].rot)
 			case EditScale:
-				msg.from.con.Write([]byte("Scale: "))
+				fmt.Fprintf(msg.from.con, "Scale (%+v):", ViewportState.Items[msg.from.editContext.modelName].scale)
+			case ResetChanges:
+				msg.from.con.Write([]byte("reseting unsaved changes...\n"))
+				// TODO: reset the changes here
+				msg.from.resetEditMode()
 			case ToggleModel:
-				msg.from.con.Write([]byte("Toggle model (y/n):"))
+				ViewportState.Items[msg.from.editContext.modelName].hidden = !ViewportState.Items[msg.from.editContext.modelName].hidden
+				fmt.Fprint(msg.from.con, "Item toggled \n")
+				msg.from.resetEditMode()
 			case DeleteModel:
-				msg.from.con.Write([]byte("Delete model (y/n):"))
+				msg.from.con.Write([]byte("Are you you want to DELETE the model? (y/n):"))
 			case Cancel:
 				msg.from.con.Write([]byte("canceled"))
 			}
@@ -222,10 +244,18 @@ func (s *Server) handleMessage() {
 					ViewportState.Items[msg.from.editContext.modelName].model.Transform = rl.MatrixRotateXYZ(v)
 				case EditScale:
 					msg.from.con.Write([]byte("scale edit"))
+				case ResetChanges:
+					msg.from.con.Write([]byte("reset all changes"))
 				case ToggleModel:
 					msg.from.con.Write([]byte("toggle model"))
 				case DeleteModel:
 					msg.from.con.Write([]byte("delete model"))
+					if input[0] == 'y' || input == "yes" {
+						// TODO: delete model here
+						fmt.Fprint(msg.from.con, "[DELETE NOT IMPLEMENTED] \n")
+					} else {
+						fmt.Fprint(msg.from.con, "Canceled...\n")
+					}
 				case Cancel:
 					msg.from.con.Write([]byte("canceled"))
 				default:
@@ -241,7 +271,7 @@ func (payload msgPayload) parseEditMode() (EditMode, error) {
 	if len(payload) == 0 {
 		return -1, fmt.Errorf("payload is empty")
 	}
-	b := payload[0] - 49 // ascii 0 is 48, but i do 1 index
+	b := payload[0] - 49
 	if b >= byte(EditRot) && b <= byte(Cancel) {
 		return EditMode(b), nil
 	}
@@ -260,7 +290,9 @@ func (input EditMode) validate() error {
 }
 
 func (e *Editor) askAttr() {
-	temp := []string{"rotation", "position", "scale", "hide model", "delete model", "cancel"}
+	temp := []string{"rotation", "position", "scale", "reset", "hide model", "delete model", "cancel"}
+	el := ViewportState.Items[e.editContext.modelName]
+	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Hidden:%+v\n", e.editContext.modelName, el.pos, el.pos, el.scale, el.hidden)
 	for i, cmd := range temp {
 		fmt.Fprintf(e.con, "[%d] - %s \n", i+1, cmd)
 	}
@@ -272,4 +304,9 @@ func (s *Scene3D) listItems(con net.Conn) {
 		con.Write([]byte(i + "\n"))
 	}
 	con.Write([]byte("--------------------\n"))
+}
+
+func (editor *Editor) resetEditMode() {
+	editor.editContext.mode = Cancel
+	editor.askAttr()
 }

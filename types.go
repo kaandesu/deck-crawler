@@ -25,13 +25,16 @@ type State struct {
 	camera   *Camera
 	running  bool
 	editMode bool
+	editFull bool
+	camMode  rl.CameraMode
 }
 
 type SceneItem struct {
-	model rl.Model
-	pos   rl.Vector3
-	rot   rl.Vector3
-	scale float32
+	model  rl.Model
+	pos    rl.Vector3
+	rot    rl.Vector3
+	scale  float32
+	hidden bool
 }
 
 type Scene3D struct {

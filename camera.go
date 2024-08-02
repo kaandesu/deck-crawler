@@ -9,8 +9,8 @@ type Camera = rl.Camera3D
 func NewCamera() *Camera {
 	return &Camera{
 		// TODO: change these position depeding on the editmode
-		Position: rl.NewVector3(1.0, -3.0, 30.0),
-		Target:   rl.NewVector3(0.0, 0.0, 0.0),
+		Position: rl.NewVector3(0.0, 12.0, 30.0),
+		Target:   rl.NewVector3(0.0, -8.0, 0.0),
 		Up:       rl.NewVector3(0.0, 1.0, 0.0),
 		Fovy:     50.0,
 	}
@@ -18,7 +18,7 @@ func NewCamera() *Camera {
 
 func MoveCam(cam *Camera, direction rl.Vector3) {
 	cam.Position = rl.Vector3Add(cam.Position, direction)
-	cam.Target = rl.Vector3Add(cam.Target, direction)
+	// cam.Target = rl.Vector3Add(cam.Target, direction)
 }
 
 func UpdateCam(cam *Camera, vel float32) {

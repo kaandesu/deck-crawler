@@ -25,6 +25,8 @@ var GameState = &State{
 	running:  true,
 	camera:   NewCamera(),
 	editMode: false,
+	editFull: true,
+	camMode:  rl.CameraFirstPerson,
 }
 
 var ViewportState = &Scene3D{
@@ -41,7 +43,7 @@ func drawScene() {
 func main() {
 	flag.Parse()
 	if *enableEditorServer {
-		server := NewServer(":3000")
+		server := NewServer("127.0.0.1:3000")
 		go server.Start()
 	}
 	defer quit()
@@ -56,7 +58,7 @@ func main() {
 
 func input() {
 	// rl.UpdateCamera(GameState.camera, rl.CameraFree)
-	UpdateCam(GameState.camera, 0.5)
+	// UpdateCam(GameState.camera, 0.5)
 }
 
 func update() {
@@ -66,6 +68,9 @@ func update() {
 func render() {
 	rl.BeginDrawing()
 	rl.ClearBackground(GameStyle.bg)
+
+	rl.DrawFPS(GameScreen.width-90, GameScreen.height-30)
+	rl.UpdateCamera(GameState.camera, GameState.camMode)
 	drawScene()
 	rl.EndDrawing()
 }

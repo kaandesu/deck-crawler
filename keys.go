@@ -20,11 +20,15 @@ type Binding struct {
 }
 
 type keyMap struct {
-	Back Binding
-	Quit Binding
-	Save Binding
+	Back         Binding
+	Quit         Binding
+	Save         Binding
+	Help         Binding
+	FullScreen   Binding
+	CycleCamMode Binding
 }
 
+// TODO:Define help menu
 var keys = keyMap{
 	Back: NewBinding(
 		WithKeys("b", "back"),
@@ -38,6 +42,19 @@ var keys = keyMap{
 		WithDisabled(),
 		WithKeys("s", "save"),
 		WithHelp("s", "[wip] save the changes"),
+	),
+	Help: NewBinding(
+		WithDisabled(),
+		WithKeys("h", "help"),
+		WithHelp("h", "[wip] display the help menu"),
+	),
+	FullScreen: NewBinding(
+		WithKeys("full", "f"),
+		WithHelp("f", "toggle fullscreen"),
+	),
+	CycleCamMode: NewBinding(
+		WithKeys("c", "cam"),
+		WithHelp("c", "toggle cam mode"),
 	),
 }
 

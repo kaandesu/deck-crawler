@@ -54,10 +54,10 @@ func SetupModels() {
 		z         = rl.NewVector3(0, 0, 0)
 		s float32 = 2.2
 	)
-	ViewportState.AddModel(WallDoorway, "door1", rl.NewVector3(0, -3, -10), z, s)
+	ViewportState.AddModel(WallDoorway, "door1", rl.NewVector3(0, 0, -10), z, s)
 	// TODO: add a id system, something like wall#123
 	ViewportState.AddModel(Wall, "wall1", rl.NewVector3(-4, 0, 0), z, s)
-	ViewportState.AddModel(Wall, "wall2", rl.NewVector3(4, -3, -7), rl.NewVector3(0, 1.5, 0), s)
+	ViewportState.AddModel(Wall, "wall2", rl.NewVector3(3.4, 0, -6.5), rl.NewVector3(0, 1.55, 0), s)
 }
 
 func LoadModels() {

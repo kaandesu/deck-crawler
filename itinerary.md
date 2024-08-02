@@ -1,7 +1,6 @@
 - basic ui design
 - creating the borders between the different views (3d view, deck, stats etc)
 - world's simplest main menu
-- thinking about the style and story every once in a during bath or cooking
 
 NOTES:
 
@@ -25,7 +24,7 @@ NOTES:
   CURRENT TODOS:
 
   - make state,style,viewport all part of the "game engine"
-  - maybe use some breadcrumbs for the state of editor mode stuff
   - save the state of the changes from editor mode: but this implies
     saving stuff to some json and we get the state of each and every assets in the scene
     maybe like (levels/level1/wall1.json etc)
+  - refactor ViewportState to State3D
