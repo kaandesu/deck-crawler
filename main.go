@@ -77,8 +77,7 @@ func render() {
 	drawScene()
 
 	rl.BeginShaderMode(pixelizer)
-	// NOTE: Render texture must be y-flipped due to default OpenGL coordinates (left-bottom)
-	rl.DrawTextureRec(SceneRenderTexture.Texture, SceneRenderRect, rl.NewVector2(0, 0), rl.White)
+	rl.DrawTextureRec(SceneRenderTexture.Texture, SceneRenderRect, rl.NewVector2(GameStyle.padding, GameStyle.padding), rl.White)
 	rl.EndShaderMode()
 
 	rl.UpdateCamera(GameState.camera, GameState.camMode)
@@ -95,12 +94,12 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	pixelizer = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
+	pixelizer = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 
 	if *enableEditorServer && *enableFullScreen {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)
 	} else {
-		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width/2, GameScreen.height/2)
+		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width/2, GameScreen.height/2+int32(GameStyle.padding)*2)
 	}
 	SceneRenderRect = rl.NewRectangle(0, 0, float32(SceneRenderTexture.Texture.Width), -float32(SceneRenderTexture.Texture.Height))
 	LoadModels()
