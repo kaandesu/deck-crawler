@@ -57,17 +57,17 @@ Starting this hobby project to add slowly the game design elements mentioned bel
 <br>
 ---
 
+#### Dungeon Exploration 🟡
+
+- **First-Person Perspective:** Explore dungeons from a first-person view with simple navigation controls (move forward, turn left/right, backtrack).
+- **Procedurally Generated Levels:** Each dungeon is randomly generated, ensuring a unique experience with every run.
+- **Rooms and Encounters:** Encounter enemies, traps, treasures, or events in each room of the dungeon.
+
 #### Deck Building 🔴
 
 - **Starter Decks:** Begin with a basic deck featuring actions like attacks, defenses, spells, and utilities.
 - **Card Acquisition:** Acquire new cards from chests, shops, and defeated enemies as you progress.
 - **Deck Customization:** Modify your deck between dungeon runs by adding new cards, removing unwanted ones, and upgrading existing cards.
-
-#### Dungeon Exploration 🔴
-
-- **First-Person Perspective:** Explore dungeons from a first-person view with simple navigation controls (move forward, turn left/right, backtrack).
-- **Procedurally Generated Levels:** Each dungeon is randomly generated, ensuring a unique experience with every run.
-- **Rooms and Encounters:** Encounter enemies, traps, treasures, or events in each room of the dungeon.
 
 #### Combat System 🔴
 
@@ -81,11 +81,10 @@ Starting this hobby project to add slowly the game design elements mentioned bel
 - **Boss Fights:** Face powerful bosses at the end of each dungeon, requiring strategic use of your deck to defeat.
 - **Meta-Progression:** Earn currency and experience to unlock new cards, abilities, and characters for future runs.
 
-#### UI Design 🔴
+#### UI Design 🟡
 
 - **Simple 3D Visualization:** Minimalistic 3D dungeon environment with a focus on clear UI elements.
 - **Card Interface:** Card interface visible at the bottom of the screen showing hand, deck, and discard pile.
-- **Dungeon Map:** Mini-map for an overview of the dungeon layout, showing the player’s location and unexplored areas.
 
 ### Art Style and Audio
 
