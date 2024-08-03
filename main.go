@@ -21,11 +21,12 @@ var (
 		fps:    60,
 	}
 	GameState = &State{
-		running:  true,
-		camera:   NewCamera(),
-		editMode: false,
-		editFull: true,
-		camMode:  rl.CameraFirstPerson,
+		running:            true,
+		camera:             NewCamera(),
+		editMode:           false,
+		editFull:           true,
+		editFocusedItemUid: "",
+		camMode:            rl.CameraFirstPerson,
 	}
 	Scene = &Scene3D{
 		Items: make(map[string]*SceneItem),
@@ -36,7 +37,7 @@ var (
 	SceneRenderRect    rl.Rectangle
 )
 
-var pixelizer rl.Shader
+var renderShader rl.Shader
 
 func drawScene() {
 	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
@@ -58,7 +59,7 @@ func main() {
 
 	defer quit()
 	defer rl.UnloadRenderTexture(SceneRenderTexture)
-	defer rl.UnloadShader(pixelizer)
+	defer rl.UnloadShader(renderShader)
 }
 
 func input() {
@@ -76,7 +77,7 @@ func render() {
 	rl.ClearBackground(GameStyle.bg)
 	drawScene()
 
-	rl.BeginShaderMode(pixelizer)
+	rl.BeginShaderMode(renderShader)
 	rl.DrawTextureRec(SceneRenderTexture.Texture, SceneRenderRect, rl.NewVector2(GameStyle.padding, GameStyle.padding), rl.White)
 	rl.EndShaderMode()
 
@@ -94,7 +95,7 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	pixelizer = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 
 	if *enableEditorServer && *enableFullScreen {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)

@@ -217,14 +217,10 @@ func (s *Server) handleMessage() {
 				msg.from.con.Write([]byte("element highlighted...\n"))
 				msg.from.resetEditMode()
 			case FocusCurrent:
-				for _, item := range Scene.Items {
-					if item.uid != msg.from.editContext.modelName && selectedItem.focus {
-						selectedItem.focus = false
-						GameState.editFocusedItemUid = item.uid
-					} else {
-						selectedItem.focus = true
-						GameState.editFocusedItemUid = item.uid
-					}
+				if msg.from.editContext.modelName == GameState.editFocusedItemUid {
+					GameState.editFocusedItemUid = ""
+				} else {
+					GameState.editFocusedItemUid = msg.from.editContext.modelName
 				}
 				msg.from.con.Write([]byte("focused on element...\n"))
 				msg.from.resetEditMode()

@@ -39,7 +39,6 @@ type SceneItem struct {
 	scale     float32
 	hidden    bool
 	highlight bool
-	focus     bool
 }
 
 type Scene3D struct {

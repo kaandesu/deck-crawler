@@ -23,7 +23,10 @@ func (s *Scene3D) render() {
 		} else {
 			tint = rl.White
 		}
-		// FIXME: add focus
+
+		if GameState.editFocusedItemUid != "" && item.uid != GameState.editFocusedItemUid {
+			tint = rl.NewColor(0, 0, 0, 70)
+		}
 		rl.DrawModel(item.model, item.pos, item.scale, tint)
 	}
 
