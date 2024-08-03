@@ -4,6 +4,40 @@
 
 🚧 there is noting here yet 🚧
 
+TCP editor server:
+
+- Select an item from the scene
+- Edit position, rotation, scale, hide/show, delete, highlight, focus, etc
+
+To start the dev editor server use `--server` flag as:
+
+```bash
+go run . --server
+```
+
+You any tcp client to interact with the scene, ie:
+On a different terminal:
+
+1- Using `telnet`: <br>
+<small>
+_telnet: a client/server application protocol that provides access to virtual terminals of remote systems on local area networks or the Internet_
+</small>
+
+```bash
+telnet 127.0.0.1 3000
+```
+
+2- Using `nc`: <br>
+<small>_nc: networking utility for reading from and writing to network connections using TCP or UDP_</small>
+
+```bash
+nc 127.0.0.1 3000
+```
+
+<div align="left">
+    <img src="public/editor.png" alt="editor" width="400">
+</div>
+
 ---
 
 ### Game Design
@@ -14,6 +48,13 @@ Starting this hobby project to add slowly the game design elements mentioned bel
 - 🟡 : in progress
 - 🔴 : not started
 
+<div align="left">
+  <a href="https://github.com/kaandesu/deck-crawler">
+    <img src="public/wip.png" alt="Logo" width="400">
+  </a>
+  [WIP]
+</div>
+<br>
 ---
 
 #### Deck Building 🔴
@@ -62,3 +103,7 @@ All contributions are welcome! You can start by creating an issue.
 ### Contact
 
 For questions or feedback, reach out with an issue or a discussion!
+
+---
+
+Inspired by [Double Dungeons](https://en.wikipedia.org/wiki/Double_Dungeons)... ❤️
