@@ -278,6 +278,7 @@ func (s *Server) handleMessage() {
 						msg.from.editContext.mode = Cancel
 						msg.from.editContext.modelName = ""
 						fmt.Fprint(msg.from.con, "Model deleted... \n")
+						Scene.listItems(msg.from.con)
 					} else {
 						fmt.Fprint(msg.from.con, "Canceled...\n")
 						msg.from.editContext.mode = Cancel
