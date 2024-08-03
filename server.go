@@ -318,7 +318,7 @@ func (input EditMode) validate() error {
 func (e *Editor) askAttr() {
 	temp := []string{"rotation", "position", "scale", "reset", "hide model", "toggle highlight", "toggle focus", "delete model", "cancel"}
 	el := Scene.Items[e.editContext.modelName]
-	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Visible:%+v\n", e.editContext.modelName, el.pos, el.rot, el.scale, el.hidden)
+	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Visible:%+v | %+v \n", e.editContext.modelName, el.pos, el.rot, el.scale, el.hidden, el.model.Materials.Shader)
 	for i, cmd := range temp {
 		fmt.Fprintf(e.con, "[%d] - %s \n", i+1, cmd)
 	}
