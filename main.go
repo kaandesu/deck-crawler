@@ -97,7 +97,7 @@ func setup() {
 	rl.SetTargetFPS(GameScreen.fps)
 	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 
-	if *enableEditorServer && *enableFullScreen {
+	if *enableFullScreen {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)
 	} else {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width/2, GameScreen.height/2+int32(GameStyle.padding)*2)

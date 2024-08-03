@@ -30,6 +30,6 @@ func (s *Scene3D) render() {
 		rl.DrawModel(item.model, item.pos, item.scale, tint)
 	}
 
-	rl.DrawGrid(50, 0)
+	rl.DrawGrid(20, 8)
 	rl.EndMode3D()
 }
