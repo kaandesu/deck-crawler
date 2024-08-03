@@ -20,6 +20,8 @@ const (
 	EditScale
 	ResetChanges
 	ToggleModel
+	HighlightCurrent
+	FocusCurrent
 	DeleteModel
 	Cancel
 )
@@ -113,7 +115,7 @@ func (s *Server) handleConn(con net.Conn) {
 
 	GameState.editMode = true
 
-	ViewportState.listItems(con)
+	Scene.listItems(con)
 	con.Write([]byte("enter item name: "))
 
 	for {
@@ -133,7 +135,7 @@ func (s *Server) handleMessage() {
 	for msg := range s.msgch {
 
 		input := string(msg.payload[:len(msg.payload)-1])
-		item, e := ViewportState.Items[string(input)]
+		item, e := Scene.Items[string(input)]
 		_ = item
 
 		switch {
@@ -147,7 +149,7 @@ func (s *Server) handleMessage() {
 					msg.from.resetEditMode()
 				} else {
 					msg.from.editContext.modelName = ""
-					ViewportState.listItems(msg.from.con)
+					Scene.listItems(msg.from.con)
 					msg.from.con.Write([]byte("enter item name: "))
 				}
 			}
@@ -196,20 +198,38 @@ func (s *Server) handleMessage() {
 			}
 
 			msg.from.editContext.mode = mode
+			selectedItem := Scene.Items[msg.from.editContext.modelName]
 			// NOTE: after item selection
 			switch msg.from.editContext.mode {
 			case EditPos:
-				fmt.Fprintf(msg.from.con, "Poisiton (%+v):", ViewportState.Items[msg.from.editContext.modelName].pos)
+				fmt.Fprintf(msg.from.con, "Poisiton (%+v):", selectedItem.pos)
 			case EditRot:
-				fmt.Fprintf(msg.from.con, "Rotation (%+v):", ViewportState.Items[msg.from.editContext.modelName].rot)
+				rot := Scene.Items[msg.from.editContext.modelName].rot
+				fmt.Fprintf(msg.from.con, "Rotation (X:%f, Y: %f, Z: %f):", rot.X*rl.Rad2deg, rot.Y*rl.Rad2deg, rot.Z*rl.Rad2deg)
 			case EditScale:
-				fmt.Fprintf(msg.from.con, "Scale (%+v):", ViewportState.Items[msg.from.editContext.modelName].scale)
+				fmt.Fprintf(msg.from.con, "Scale (%+v):", selectedItem.scale)
 			case ResetChanges:
 				msg.from.con.Write([]byte("reseting unsaved changes...\n"))
 				// TODO: reset the changes here
 				msg.from.resetEditMode()
+			case HighlightCurrent:
+				selectedItem.highlight = !selectedItem.highlight
+				msg.from.con.Write([]byte("element highlighted...\n"))
+				msg.from.resetEditMode()
+			case FocusCurrent:
+				for _, item := range Scene.Items {
+					if item.uid != msg.from.editContext.modelName && selectedItem.focus {
+						selectedItem.focus = false
+						GameState.editFocusedItemUid = item.uid
+					} else {
+						selectedItem.focus = true
+						GameState.editFocusedItemUid = item.uid
+					}
+				}
+				msg.from.con.Write([]byte("focused on element...\n"))
+				msg.from.resetEditMode()
 			case ToggleModel:
-				ViewportState.Items[msg.from.editContext.modelName].hidden = !ViewportState.Items[msg.from.editContext.modelName].hidden
+				selectedItem.hidden = !Scene.Items[msg.from.editContext.modelName].hidden
 				fmt.Fprint(msg.from.con, "Item toggled \n")
 				msg.from.resetEditMode()
 			case DeleteModel:
@@ -230,7 +250,7 @@ func (s *Server) handleMessage() {
 					v2, _ := strconv.ParseFloat(vals[1], 32)
 					v3, _ := strconv.ParseFloat(vals[2], 32)
 					msg.from.con.Write([]byte("Position: "))
-					ViewportState.Items[msg.from.editContext.modelName].pos = rl.NewVector3(float32(v1), float32(v2), float32(v3))
+					Scene.Items[msg.from.editContext.modelName].pos = rl.NewVector3(float32(v1), float32(v2), float32(v3))
 				case EditRot:
 					if len(vals) != 3 {
 						msg.from.con.Write([]byte("invalid number of arguments, need 3\n"))
@@ -240,21 +260,21 @@ func (s *Server) handleMessage() {
 					v1, _ := strconv.ParseFloat(vals[0], 32)
 					v2, _ := strconv.ParseFloat(vals[1], 32)
 					v3, _ := strconv.ParseFloat(vals[2], 32)
-					v := rl.NewVector3(float32(v1), float32(v2), float32(v3))
-					ViewportState.Items[msg.from.editContext.modelName].model.Transform = rl.MatrixRotateXYZ(v)
+					v := rl.NewVector3(float32(v1)*rl.Deg2rad, float32(v2)*rl.Deg2rad, float32(v3)*rl.Deg2rad)
+					Scene.Items[msg.from.editContext.modelName].model.Transform = rl.MatrixRotateXYZ(v)
 				case EditScale:
 					if len(vals) != 1 {
 						msg.from.con.Write([]byte("invalid number of arguments, need 1\n"))
 						break
 					}
-					v1, _ := strconv.ParseFloat(vals[0], 32)
-					ViewportState.Items[msg.from.editContext.modelName].scale = float32(v1)
 					msg.from.con.Write([]byte("scale edit"))
 				case ResetChanges:
 					msg.from.con.Write([]byte("reset all changes"))
+					v1, _ := strconv.ParseFloat(vals[0], 32)
+					Scene.Items[msg.from.editContext.modelName].scale = float32(v1)
 				case DeleteModel:
 					if input[0] == 'y' || input == "yes" {
-						delete(ViewportState.Items, msg.from.editContext.modelName)
+						delete(Scene.Items, msg.from.editContext.modelName)
 						msg.from.editContext.mode = Cancel
 						msg.from.editContext.modelName = ""
 						fmt.Fprint(msg.from.con, "Model deleted... \n")
@@ -265,7 +285,7 @@ func (s *Server) handleMessage() {
 				case Cancel:
 					msg.from.con.Write([]byte("Canceled...\n"))
 				default:
-					msg.from.con.Write([]byte("\n\n\nif you see this message, please create an issue\n\n\n"))
+					msg.from.con.Write([]byte("\nif you see this message open an issue\n"))
 				}
 			}
 		}
@@ -296,9 +316,9 @@ func (input EditMode) validate() error {
 }
 
 func (e *Editor) askAttr() {
-	temp := []string{"rotation", "position", "scale", "reset", "hide model", "delete model", "cancel"}
-	el := ViewportState.Items[e.editContext.modelName]
-	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Visible:%+v\n", e.editContext.modelName, el.pos, el.pos, el.scale, el.hidden)
+	temp := []string{"rotation", "position", "scale", "reset", "hide model", "toggle highlight", "toggle focus", "delete model", "cancel"}
+	el := Scene.Items[e.editContext.modelName]
+	fmt.Fprintf(e.con, "[%s] Pos: %+v | Rot: %+v | Scale:%+v | Visible:%+v\n", e.editContext.modelName, el.pos, el.rot, el.scale, el.hidden)
 	for i, cmd := range temp {
 		fmt.Fprintf(e.con, "[%d] - %s \n", i+1, cmd)
 	}
@@ -306,7 +326,7 @@ func (e *Editor) askAttr() {
 
 func (s *Scene3D) listItems(con net.Conn) {
 	con.Write([]byte("\n-----Item List------\n"))
-	for i := range ViewportState.Items {
+	for i := range Scene.Items {
 		con.Write([]byte(i + "\n"))
 	}
 	con.Write([]byte("--------------------\n"))

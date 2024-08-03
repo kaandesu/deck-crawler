@@ -21,20 +21,25 @@ type Style struct {
 	roundness float32
 }
 
+// TODO: group edit related stuff in a single struct
 type State struct {
-	camera   *Camera
-	running  bool
-	editMode bool
-	editFull bool
-	camMode  rl.CameraMode
+	camera             *Camera
+	running            bool
+	editMode           bool
+	editFull           bool
+	editFocusedItemUid string
+	camMode            rl.CameraMode
 }
 
 type SceneItem struct {
-	model  rl.Model
-	pos    rl.Vector3
-	rot    rl.Vector3
-	scale  float32
-	hidden bool
+	uid       string
+	model     rl.Model
+	pos       rl.Vector3
+	rot       rl.Vector3
+	scale     float32
+	hidden    bool
+	highlight bool
+	focus     bool
 }
 
 type Scene3D struct {

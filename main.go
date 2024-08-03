@@ -6,38 +6,38 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var GameStyle = &Style{
-	bg:        rl.NewColor(50, 50, 50, 255),
-	primary:   rl.NewColor(200, 200, 200, 255),
-	accent:    rl.NewColor(200, 200, 0, 255),
-	padding:   20,
-	roundness: 0.1,
-}
-
-var GameScreen = &Screen{
-	width:  800,
-	height: 680,
-	title:  "Deck Crawler",
-	fps:    60,
-}
-
-var GameState = &State{
-	running:  true,
-	camera:   NewCamera(),
-	editMode: false,
-	editFull: true,
-	camMode:  rl.CameraFirstPerson,
-}
-
-var ViewportState = &Scene3D{
-	Items: make(map[string]*SceneItem),
-}
-
-var enableEditorServer = flag.Bool("server", false, "enable editor server")
+var (
+	GameStyle = &Style{
+		bg:        rl.NewColor(50, 50, 50, 255),
+		primary:   rl.NewColor(200, 200, 200, 255),
+		accent:    rl.NewColor(200, 200, 0, 255),
+		padding:   20,
+		roundness: 0.1,
+	}
+	GameScreen = &Screen{
+		width:  800,
+		height: 680,
+		title:  "Deck Crawler",
+		fps:    60,
+	}
+	GameState = &State{
+		running:  true,
+		camera:   NewCamera(),
+		editMode: false,
+		editFull: true,
+		camMode:  rl.CameraFirstPerson,
+	}
+	Scene = &Scene3D{
+		Items: make(map[string]*SceneItem),
+	}
+	enableEditorServer = flag.Bool("server", false, "enable editor server")
+	enableFullScreen   = flag.Bool("full", false, "enable full screen for editing")
+	SceneRenderTexture rl.RenderTexture2D
+	SceneRenderRect    rl.Rectangle
+)
 
 func drawScene() {
 	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
-	draw3DViewport()
 }
 
 func main() {
@@ -46,19 +46,19 @@ func main() {
 		server := NewServer("127.0.0.1:3000")
 		go server.Start()
 	}
-	defer quit()
-	setup()
 
+	setup()
 	for GameState.running {
 		input()
 		update()
 		render()
 	}
+
+	defer quit()
+	defer rl.UnloadRenderTexture(SceneRenderTexture)
 }
 
 func input() {
-	// rl.UpdateCamera(GameState.camera, rl.CameraFree)
-	// UpdateCam(GameState.camera, 0.5)
 }
 
 func update() {
@@ -66,12 +66,18 @@ func update() {
 }
 
 func render() {
+	rl.BeginTextureMode(SceneRenderTexture)
+	Scene.render()
+	rl.EndTextureMode()
 	rl.BeginDrawing()
 	rl.ClearBackground(GameStyle.bg)
+	drawScene()
+
+	rl.DrawTextureRec(SceneRenderTexture.Texture, SceneRenderRect, rl.NewVector2(0, 0), rl.White)
+
+	rl.UpdateCamera(GameState.camera, GameState.camMode)
 
 	rl.DrawFPS(GameScreen.width-90, GameScreen.height-30)
-	rl.UpdateCamera(GameState.camera, GameState.camMode)
-	drawScene()
 	rl.EndDrawing()
 }
 
@@ -83,5 +89,12 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
+
+	if *enableEditorServer && *enableFullScreen {
+		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)
+	} else {
+		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width/2, GameScreen.height/2)
+	}
+	SceneRenderRect = rl.NewRectangle(0, 0, float32(SceneRenderTexture.Texture.Width), -float32(SceneRenderTexture.Texture.Height))
 	LoadModels()
 }

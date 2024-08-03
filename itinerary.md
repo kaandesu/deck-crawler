@@ -27,4 +27,3 @@ NOTES:
   - save the state of the changes from editor mode: but this implies
     saving stuff to some json and we get the state of each and every assets in the scene
     maybe like (levels/level1/wall1.json etc)
-  - refactor ViewportState to State3D

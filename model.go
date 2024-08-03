@@ -41,6 +41,7 @@ func (scene *Scene3D) AddModel(modelType ModelType, modelName string, pos, rot r
 	temp := rl.LoadModel(path)
 	temp.Transform = rl.MatrixRotateXYZ(rot)
 	scene.Items[modelName] = &SceneItem{
+		uid:   modelName,
 		model: temp,
 		pos:   pos,
 		rot:   rot,
@@ -51,13 +52,15 @@ func (scene *Scene3D) AddModel(modelType ModelType, modelName string, pos, rot r
 
 func SetupModels() {
 	var (
-		z         = rl.NewVector3(0, 0, 0)
-		s float32 = 2.2
+		rot           = rl.NewVector3(0, 0, 0)
+		scale float32 = 2.2
 	)
-	ViewportState.AddModel(WallDoorway, "door1", rl.NewVector3(0, 0, -10), z, s)
+	Scene.AddModel(WallDoorway, "door1", rl.NewVector3(0, 0, -10), rot, scale)
 	// TODO: add a id system, something like wall#123
-	ViewportState.AddModel(Wall, "wall1", rl.NewVector3(-4, 0, 0), z, s)
-	ViewportState.AddModel(Wall, "wall2", rl.NewVector3(3.4, 0, -6.5), rl.NewVector3(0, 1.55, 0), s)
+	Scene.AddModel(Wall, "wall1", rl.NewVector3(-3.3, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+	Scene.AddModel(Wall, "wall2", rl.NewVector3(3.4, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+	Scene.AddModel(Wall, "wall3", rl.NewVector3(-3.3, 0, -0.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+	Scene.AddModel(Wall, "wall4", rl.NewVector3(3.4, 0, -0.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 }
 
 func LoadModels() {
