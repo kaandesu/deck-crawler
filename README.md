@@ -52,9 +52,13 @@ Starting this hobby project to add slowly the game design elements mentioned bel
   <a href="https://github.com/kaandesu/deck-crawler">
     <img src="public/wip.png" alt="Logo" width="400">
   </a>
-  [WIP]
+  <a href="https://github.com/kaandesu/deck-crawler">
+    <img src="public/maze.png" alt="maze" width="400">
+  </a>
+  <small>WIP</small>
 </div>
 <br>
+
 ---
 
 #### Dungeon Exploration 🟡
