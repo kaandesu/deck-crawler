@@ -36,7 +36,7 @@ var (
 	enableFullScreen   = flag.Bool("full", false, "enable full screen for editing")
 	SceneRenderTexture rl.RenderTexture2D
 	SceneRenderRect    rl.Rectangle
-	maze               Maze
+	maze               *Maze
 )
 
 var renderShader rl.Shader

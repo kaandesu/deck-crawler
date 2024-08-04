@@ -36,10 +36,13 @@ func NewNode(id, x, y int) *Node {
 }
 
 type Maze struct {
-	origin *Node
-	matrix [][]*Node
-	scale  int
+	origin    *Node
+	matrix    [][]*Node
+	nodePairs [][]*Node
+	scale     int
 }
+
+// FIX: There are a lot of double for loops for node actions, combine them in a single function
 
 func LinkNodes(a, b *Node, direction Direction) {
 	switch direction {
@@ -54,7 +57,7 @@ func LinkNodes(a, b *Node, direction Direction) {
 	}
 }
 
-func CreateMatrix(n int, scale int) Maze {
+func CreateMatrix(n int, scale int) *Maze {
 	grid := make([][]*Node, n)
 	for i := 0; i < n; i++ {
 		grid[i] = make([]*Node, n)
@@ -75,7 +78,7 @@ func CreateMatrix(n int, scale int) Maze {
 		}
 	}
 	grid[0][n-1].Color = rl.Red
-	return Maze{
+	return &Maze{
 		matrix: grid,
 		origin: grid[0][n-1],
 		scale:  scale,
@@ -140,7 +143,6 @@ func (maze *Maze) draw() {
 	for _, row := range maze.matrix {
 		for _, node := range row {
 			col = node.Color
-			// NOTE: 4 * 2.2 = 8.8
 			rl.DrawCube(rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)), 1.5, 1.5, 1.5, col)
 
 			if node.Right != nil {
@@ -189,6 +191,7 @@ func (maze *Maze) drawWalls() {
 	for _, row := range maze.matrix {
 		for _, node := range row {
 			node.linkIncoming()
+			maze.createNodePair(node)
 			dirs, n := node.linkNum()
 			nodePos := rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale))
 			switch n {
@@ -216,7 +219,58 @@ func (maze *Maze) drawWalls() {
 	}
 }
 
-// NOTE: this migh be called in drawWalls() instead
+// WARN: will use this to create the in-between nodes
+// will use them to create more walls and walking points
+func (m *Maze) createNodePair(node *Node) {
+	dirs, _ := node.linkNum()
+	for _, dir := range dirs {
+		switch dir {
+		case Left:
+			if node.OnLeft != nil {
+				m.addNodePair(node, node.OnLeft)
+			} else {
+				m.addNodePair(node, node.Left)
+			}
+		case Right:
+			if node.OnRight != nil {
+				m.addNodePair(node, node.OnRight)
+			} else {
+				m.addNodePair(node, node.Right)
+			}
+		case Up:
+			if node.OnUp != nil {
+				m.addNodePair(node, node.OnUp)
+			} else {
+				m.addNodePair(node, node.Up)
+			}
+		case Down:
+			if node.OnDown != nil {
+				m.addNodePair(node, node.OnDown)
+			} else {
+				m.addNodePair(node, node.Down)
+			}
+
+		}
+	}
+}
+
+func (m *Maze) addNodePair(n1, n2 *Node) {
+	pairExists := func(pair1, pair2 []*Node) bool {
+		for _, pair := range m.nodePairs {
+			if (pair[0] == pair1[0] && pair[1] == pair1[1]) || (pair[0] == pair2[0] && pair[1] == pair2[1]) {
+				return true
+			}
+		}
+		return false
+	}
+
+	pair1 := []*Node{n1, n2}
+	pair2 := []*Node{n2, n1}
+	if !pairExists(pair1, pair2) {
+		m.nodePairs = append(m.nodePairs, pair1)
+	}
+}
+
 func (node *Node) linkIncoming() {
 	if node.X != 0 {
 		n := maze.matrix[node.X-1][node.Y]
