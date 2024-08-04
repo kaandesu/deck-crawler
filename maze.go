@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -24,6 +23,7 @@ type Node struct {
 	Id                            int
 	X, Y                          int
 	Color                         color.RGBA
+	// TODO : add spawner stuct, spawner type (none,slime etc), spawnerReady bool
 }
 
 func NewNode(id, x, y int) *Node {
@@ -186,46 +186,37 @@ var (
 )
 
 func (maze *Maze) drawWalls() {
-	matix := maze.matrix
-	for i, row := range matix {
-		for j, node := range row {
+	for _, row := range maze.matrix {
+		for _, node := range row {
+			node.linkIncoming()
 			dirs, n := node.linkNum()
 			nodePos := rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale))
-			id := fmt.Sprintf("wall%d%d%d", i, j, n)
 			switch n {
 			case 1:
 				switch dirs[0] {
 				case Left:
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2)), rl.NewVector3(0, 0, 0), scale)
-					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				case Right:
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2)), rl.NewVector3(0, 0, 0), scale)
-					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				case Down:
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
-					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
 				case Up:
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
-					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
 				}
 			}
 		}
 	}
 }
 
-func (maze *Maze) linkIncomingNodes() {
-	matix := maze.matrix
-	for _, row := range matix {
-		for _, node := range row {
-			node.linkIncoming()
-		}
-	}
-}
-
+// NOTE: this migh be called in drawWalls() instead
 func (node *Node) linkIncoming() {
 	if node.X != 0 {
 		n := maze.matrix[node.X-1][node.Y]

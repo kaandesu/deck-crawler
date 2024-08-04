@@ -104,7 +104,6 @@ func setup() {
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
 	}
-	maze.linkIncomingNodes()
 	maze.drawWalls()
 
 	if *enableFullScreen {

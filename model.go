@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -14,14 +15,15 @@ const (
 	Box
 )
 
-func (scene *Scene3D) AddModel(modelType ModelType, modelName string, pos, rot rl.Vector3, scale float32) error {
+func (scene *Scene3D) AddModel(modelType ModelType, pos, rot rl.Vector3, scale float32) error {
 	var (
 		found = false
 		path  = ""
 	)
 
-	if _, e := scene.Items[modelName]; e {
-		return errors.New("model.go: same key already exists: " + modelName)
+	uid := fmt.Sprintf("wall%d", len(scene.Items))
+	if _, e := scene.Items[uid]; e {
+		return errors.New("model.go: same key already exists: " + uid)
 	}
 	switch modelType {
 	case Wall:
@@ -40,8 +42,8 @@ func (scene *Scene3D) AddModel(modelType ModelType, modelName string, pos, rot r
 
 	temp := rl.LoadModel(path)
 	temp.Transform = rl.MatrixRotateXYZ(rot)
-	scene.Items[modelName] = &SceneItem{
-		uid:   modelName,
+	scene.Items[uid] = &SceneItem{
+		uid:   uid,
 		model: temp,
 		pos:   pos,
 		rot:   rot,
