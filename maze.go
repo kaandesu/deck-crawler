@@ -179,7 +179,11 @@ func (maze *Maze) draw() {
 	}
 }
 
-var scale float32 = 2.2
+var (
+	scale    float32 = 2.2
+	baseSize float32 = 4
+	wallSize float32 = scale * baseSize
+)
 
 func (maze *Maze) drawWalls() {
 	matix := maze.matrix
@@ -190,20 +194,23 @@ func (maze *Maze) drawWalls() {
 			id := fmt.Sprintf("wall%d%d%d", i, j, n)
 			switch n {
 			case 1:
-				offset := rl.NewVector3(0, 0, 0)
 				switch dirs[0] {
 				case Left:
-					offset.Z = 4.4
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				case Right:
-					offset.Z = -4.4
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				case Down:
-					offset.X = -4.4
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
 				case Up:
-					offset.X = 4.4
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, id+"1", rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, id+"2", rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
 				}
 			}
 		}
