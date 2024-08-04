@@ -48,6 +48,7 @@ func drawScene() {
 func main() {
 	flag.Parse()
 	if *enableEditorServer {
+		// TODO: use flag for the port no, default 3000
 		server := NewServer("127.0.0.1:3000")
 		go server.Start()
 	}

@@ -140,6 +140,7 @@ func (maze *Maze) draw() {
 	for _, row := range maze.matrix {
 		for _, node := range row {
 			col = node.Color
+			// NOTE: 4 * 2.2 = 8.8
 			rl.DrawCube(rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)), 1.5, 1.5, 1.5, col)
 
 			if node.Right != nil {
@@ -186,20 +187,23 @@ func (maze *Maze) drawWalls() {
 		for j, node := range row {
 			dirs, n := node.linkNum()
 			nodePos := rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale))
-			fmt.Println(n)
 			id := fmt.Sprintf("wall%d%d%d", i, j, n)
 			switch n {
 			case 1:
 				offset := rl.NewVector3(0, 0, 0)
 				switch dirs[0] {
 				case Left:
+					offset.Z = 4.4
 					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 0, 0), scale)
 				case Right:
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 0, 0), scale)
-				case Up:
+					offset.Z = -4.4
 					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 0, 0), scale)
 				case Down:
-					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 0, 0), scale)
+					offset.X = -4.4
+					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+				case Up:
+					offset.X = 4.4
+					Scene.AddModel(Wall, id, rl.Vector3Add(nodePos, offset), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				}
 			}
 		}
@@ -293,8 +297,6 @@ func (node *Node) linkNum() ([]Direction, int) {
 	case 4:
 		node.Color = rl.Violet
 	}
-
-	fmt.Printf(">>%d, %d | %+v %d \n", node.X, node.Y, dirs, count)
 
 	return dirs, count
 }
