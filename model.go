@@ -55,12 +55,17 @@ func SetupModels() {
 		rot           = rl.NewVector3(0, 0, 0)
 		scale float32 = 2.2
 	)
-	Scene.AddModel(WallDoorway, "door1", rl.NewVector3(0, 0, -10), rot, scale)
+	_ = rot
+	_ = scale
 	// TODO: add a id system, something like wall#123
-	Scene.AddModel(Wall, "wall1", rl.NewVector3(-3.3, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-	Scene.AddModel(Wall, "wall2", rl.NewVector3(3.4, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-	Scene.AddModel(Wall, "wall3", rl.NewVector3(-3.3, 0, 3.3), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-	Scene.AddModel(Wall, "wall4", rl.NewVector3(3.4, 0, 3.3), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+	// WARN: disabled models
+	/*
+		Scene.AddModel(WallDoorway, "door1", rl.NewVector3(0, 0, -10), rot, scale)
+		Scene.AddModel(Wall, "wall1", rl.NewVector3(-3.3, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+		Scene.AddModel(Wall, "wall2", rl.NewVector3(3.4, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+		Scene.AddModel(Wall, "wall3", rl.NewVector3(-3.3, 0, 3.3), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+		Scene.AddModel(Wall, "wall4", rl.NewVector3(3.4, 0, 3.3), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+	*/
 }
 
 func LoadModels() {

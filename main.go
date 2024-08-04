@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"golang.org/x/exp/rand"
 )
 
 var (
@@ -26,7 +27,7 @@ var (
 		editMode:           false,
 		editFull:           true,
 		editFocusedItemUid: "",
-		camMode:            rl.CameraFirstPerson,
+		camMode:            rl.CameraThirdPerson,
 	}
 	Scene = &Scene3D{
 		Items: make(map[string]*SceneItem),
@@ -35,6 +36,7 @@ var (
 	enableFullScreen   = flag.Bool("full", false, "enable full screen for editing")
 	SceneRenderTexture rl.RenderTexture2D
 	SceneRenderRect    rl.Rectangle
+	maze               Maze
 )
 
 var renderShader rl.Shader
@@ -95,7 +97,12 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	maze = CreateMatrix(8, 8)
+	for range len(maze.matrix) * len(maze.matrix) * 11 {
+		maze.walkOrigin(Direction(rand.Intn(4)))
+	}
 
 	if *enableFullScreen {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)
