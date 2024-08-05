@@ -15,46 +15,35 @@ const (
 	Down
 )
 
-var col color.RGBA
-
 type Node struct {
 	Left, Right, Up, Down         *Node
 	OnLeft, OnRight, OnUp, OnDown *Node
-	Id                            int
 	X, Y                          int
+	posX, posY                    int
 	Color                         color.RGBA
-	// TODO : add spawner stuct, spawner type (none,slime etc), spawnerReady bool
 }
 
-func NewNode(id, x, y int) *Node {
+func NewNode(x, y, scale int) *Node {
 	return &Node{
-		Id:    id,
 		X:     x,
 		Y:     y,
+		posX:  x * scale,
+		posY:  y * scale,
 		Color: rl.Black,
 	}
+}
+
+type PairNode struct {
+	inBetween *Node
+	nodes     []*Node
+	dir       Direction // TODO: add onLeft etc dirs to the type
 }
 
 type Maze struct {
 	origin    *Node
 	matrix    [][]*Node
-	nodePairs [][]*Node
+	nodePairs []PairNode
 	scale     int
-}
-
-// FIX: There are a lot of double for loops for node actions, combine them in a single function
-
-func LinkNodes(a, b *Node, direction Direction) {
-	switch direction {
-	case Left:
-		a.Left = b
-	case Right:
-		a.Right = b
-	case Up:
-		a.Up = b
-	case Down:
-		a.Down = b
-	}
 }
 
 func CreateMatrix(n int, scale int) *Maze {
@@ -62,7 +51,7 @@ func CreateMatrix(n int, scale int) *Maze {
 	for i := 0; i < n; i++ {
 		grid[i] = make([]*Node, n)
 		for j := 0; j < n; j++ {
-			grid[i][j] = NewNode(i*n+j, i, j)
+			grid[i][j] = NewNode(i, j, scale)
 		}
 	}
 
@@ -140,44 +129,51 @@ func (node *Node) removeOriginPointer() {
 }
 
 func (maze *Maze) draw() {
+	var allNodes []*Node
 	for _, row := range maze.matrix {
-		for _, node := range row {
-			col = node.Color
-			rl.DrawCube(rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)), 1.5, 1.5, 1.5, col)
+		allNodes = append(allNodes, row...)
+	}
 
-			if node.Right != nil {
-				rl.DrawLine3D(
-					rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)),
-					rl.NewVector3(float32(node.Right.X*maze.scale), 0, float32(node.Right.Y*maze.scale)),
-					rl.Blue,
-				)
-			}
+	for _, pair := range maze.nodePairs {
+		allNodes = append(allNodes, pair.inBetween)
+	}
 
-			if node.Left != nil {
-				rl.DrawLine3D(
-					rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)),
-					rl.NewVector3(float32(node.Left.X*maze.scale), 0, float32(node.Left.Y*maze.scale)),
-					rl.Green,
-				)
-			}
+	for _, node := range allNodes {
 
-			if node.Up != nil {
-				rl.DrawLine3D(
-					rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)),
-					rl.NewVector3(float32(node.Up.X*maze.scale), 0, float32(node.Up.Y*maze.scale)),
-					rl.Blue,
-				)
-			}
+		rl.DrawCube(rl.NewVector3(float32(node.posX), 0, float32(node.posY)), 1.5, 1.5, 1.5, node.Color)
 
-			if node.Down != nil {
-				rl.DrawLine3D(
-					rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale)),
-					rl.NewVector3(float32(node.Down.X*maze.scale), 0, float32(node.Down.Y*maze.scale)),
-					rl.Green,
-				)
-			}
-
+		if node.Right != nil {
+			rl.DrawLine3D(
+				rl.NewVector3(float32(node.posX), 0, float32(node.posY)),
+				rl.NewVector3(float32(node.Right.posX), 0, float32(node.Right.posY)),
+				rl.Blue,
+			)
 		}
+
+		if node.Left != nil {
+			rl.DrawLine3D(
+				rl.NewVector3(float32(node.posX), 0, float32(node.posY)),
+				rl.NewVector3(float32(node.Left.posX), 0, float32(node.Left.posY)),
+				rl.Green,
+			)
+		}
+
+		if node.Up != nil {
+			rl.DrawLine3D(
+				rl.NewVector3(float32(node.posX), 0, float32(node.posY)),
+				rl.NewVector3(float32(node.Up.posX), 0, float32(node.Up.posY)),
+				rl.Blue,
+			)
+		}
+
+		if node.Down != nil {
+			rl.DrawLine3D(
+				rl.NewVector3(float32(node.posX), 0, float32(node.posY)),
+				rl.NewVector3(float32(node.Down.posX), 0, float32(node.Down.posY)),
+				rl.Green,
+			)
+		}
+
 	}
 }
 
@@ -191,7 +187,6 @@ func (maze *Maze) drawWalls() {
 	for _, row := range maze.matrix {
 		for _, node := range row {
 			node.linkIncoming()
-			maze.createNodePair(node)
 			dirs, n := node.linkNum()
 			nodePos := rl.NewVector3(float32(node.X*maze.scale), 0, float32(node.Y*maze.scale))
 			switch n {
@@ -219,44 +214,103 @@ func (maze *Maze) drawWalls() {
 	}
 }
 
-// WARN: will use this to create the in-between nodes
-// will use them to create more walls and walking points
+func (m *Maze) addInBetweenNode(pairNode PairNode) {
+	pair := pairNode.nodes
+	dir := pairNode.dir
+	var node *Node
+	switch dir {
+
+	case Left:
+		node = &Node{
+			Left:  pair[1],
+			Right: pair[0],
+			posX:  (pair[0].posX + pair[1].posX) / 2,
+			posY:  (pair[0].posY + pair[1].posY) / 2,
+		}
+		pair[1].Right = node
+		pair[0].Left = node
+		node.OnRight = pair[1]
+		node.OnLeft = pair[0]
+
+	case Right:
+		node = &Node{
+			Left:  pair[0],
+			Right: pair[1],
+			posX:  (pair[0].posX + pair[1].posX) / 2,
+			posY:  (pair[0].posY + pair[1].posY) / 2,
+		}
+		pair[0].Right = node
+		pair[1].Left = node
+		node.OnRight = pair[0]
+		node.OnLeft = pair[1]
+
+	case Down:
+		node = &Node{
+			Up:   pair[0],
+			Down: pair[1],
+			posX: (pair[0].posX + pair[1].posX) / 2,
+			posY: (pair[0].posY + pair[1].posY) / 2,
+		}
+		pair[0].Down = node
+		pair[1].Up = node
+		node.OnDown = pair[0]
+		node.OnUp = pair[1]
+
+	case Up:
+		node = &Node{
+			Up:   pair[1],
+			Down: pair[0],
+			posX: (pair[0].posX + pair[1].posX) / 2,
+			posY: (pair[0].posY + pair[1].posY) / 2,
+		}
+		pair[1].Down = node
+		pair[0].Up = node
+		node.OnDown = pair[1]
+		node.OnUp = pair[0]
+
+	}
+	node.Color = rl.White
+	pairNode.inBetween = node
+	m.nodePairs = append(m.nodePairs, pairNode)
+}
+
 func (m *Maze) createNodePair(node *Node) {
 	dirs, _ := node.linkNum()
 	for _, dir := range dirs {
 		switch dir {
 		case Left:
-			if node.OnLeft != nil {
-				m.addNodePair(node, node.OnLeft)
-			} else {
-				m.addNodePair(node, node.Left)
+			if node.OnLeft == nil {
+				m.addNodePair(node, node.Left, Left)
 			}
 		case Right:
-			if node.OnRight != nil {
-				m.addNodePair(node, node.OnRight)
-			} else {
-				m.addNodePair(node, node.Right)
+			if node.OnRight == nil {
+				m.addNodePair(node, node.Right, Right)
 			}
 		case Up:
-			if node.OnUp != nil {
-				m.addNodePair(node, node.OnUp)
-			} else {
-				m.addNodePair(node, node.Up)
+			if node.OnUp == nil {
+				m.addNodePair(node, node.Up, Up)
 			}
 		case Down:
-			if node.OnDown != nil {
-				m.addNodePair(node, node.OnDown)
-			} else {
-				m.addNodePair(node, node.Down)
+			if node.OnDown == nil {
+				m.addNodePair(node, node.Down, Down)
 			}
 
 		}
 	}
 }
 
-func (m *Maze) addNodePair(n1, n2 *Node) {
+func (maze *Maze) createNodePairs() {
+	for _, row := range maze.matrix {
+		for _, node := range row {
+			maze.createNodePair(node)
+		}
+	}
+}
+
+func (m *Maze) addNodePair(n1, n2 *Node, dir Direction) {
 	pairExists := func(pair1, pair2 []*Node) bool {
-		for _, pair := range m.nodePairs {
+		for _, pairs := range m.nodePairs {
+			pair := pairs.nodes
 			if (pair[0] == pair1[0] && pair[1] == pair1[1]) || (pair[0] == pair2[0] && pair[1] == pair2[1]) {
 				return true
 			}
@@ -267,7 +321,11 @@ func (m *Maze) addNodePair(n1, n2 *Node) {
 	pair1 := []*Node{n1, n2}
 	pair2 := []*Node{n2, n1}
 	if !pairExists(pair1, pair2) {
-		m.nodePairs = append(m.nodePairs, pair1)
+		nodePair := PairNode{
+			nodes: []*Node{n1, n2},
+			dir:   dir,
+		}
+		m.addInBetweenNode(nodePair)
 	}
 }
 
@@ -351,4 +409,17 @@ func (node *Node) linkNum() ([]Direction, int) {
 	}
 
 	return dirs, count
+}
+
+func LinkNodes(a, b *Node, direction Direction) {
+	switch direction {
+	case Left:
+		a.Left = b
+	case Right:
+		a.Right = b
+	case Up:
+		a.Up = b
+	case Down:
+		a.Down = b
+	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -100,11 +101,16 @@ func setup() {
 	rl.SetTargetFPS(GameScreen.fps)
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
-	maze = CreateMatrix(8, 24)
+	maze = CreateMatrix(5, 24)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
 	}
 	maze.drawWalls()
+	maze.createNodePairs()
+
+	if len(maze.nodePairs) != len(maze.matrix)*len(maze.matrix)-1 {
+		panic(errors.New("pair num is not correct"))
+	}
 
 	if *enableFullScreen {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)
