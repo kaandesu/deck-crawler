@@ -51,22 +51,3 @@ func (scene *Scene3D) AddModel(modelType ModelType, pos, rot rl.Vector3, scale f
 	}
 	return nil
 }
-
-func SetupModels() {
-	rot := rl.NewVector3(0, 0, 0)
-	_ = rot
-	_ = scale
-	// TODO: add a id system, something like wall#123
-	// WARN: disabled models
-	/*
-		Scene.AddModel(WallDoorway, "door1", rl.NewVector3(0, 0, -10), rot, scale)
-		Scene.AddModel(Wall, "wall1", rl.NewVector3(-3.3, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-		Scene.AddModel(Wall, "wall2", rl.NewVector3(3.4, 0, -5.5), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-		Scene.AddModel(Wall, "wall3", rl.NewVector3(-3.3, 0, 3.3), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-		Scene.AddModel(Wall, "wall4", rl.NewVector3(3.4, 0, 3.3), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-	*/
-}
-
-func LoadModels() {
-	SetupModels()
-}

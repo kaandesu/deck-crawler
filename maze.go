@@ -189,19 +189,19 @@ func (maze *Maze) drawWalls() {
 			switch n {
 			case 1:
 				switch dirs[0] {
-				case Left, OnLeft:
+				case Left:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-				case Right, OnRight:
+				case Right:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-				case Down, OnDown:
+				case Down:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
-				case Up, OnUp:
+				case Up:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
@@ -212,17 +212,16 @@ func (maze *Maze) drawWalls() {
 }
 
 func (node *Node) drawInBetweenWalls() {
-	nodePos := rl.NewVector3(float32(node.posX), 0, float32(node.posX))
+	nodePos := rl.NewVector3(float32(node.posX), 0, float32(node.posY))
 	_ = nodePos
 	if node.Left != nil || node.Right != nil {
 		node.Color = rl.Pink
-		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize+1.7, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((-2*wallSize)+0.7, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 	}
 	if node.Up != nil || node.Down != nil {
 		node.Color = rl.Beige
-		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize+1.7)), rl.NewVector3(0, 0, 0), scale)
-		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, (-2*wallSize)+0.7)), rl.NewVector3(0, 0, 0), scale)
+		Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, 3.8-wallSize)), rl.NewVector3(0, 0, 0), scale)
+		Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, (wallSize)-3.8)), rl.NewVector3(0, 0, 0), scale)
 	}
 }
 
