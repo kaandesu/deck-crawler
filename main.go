@@ -79,6 +79,7 @@ func render() {
 	rl.EndTextureMode()
 	rl.BeginDrawing()
 	rl.ClearBackground(GameStyle.bg)
+
 	drawScene()
 
 	rl.BeginShaderMode(renderShader)
@@ -107,6 +108,7 @@ func setup() {
 	}
 	maze.drawWalls()
 	maze.createNodePairs()
+	maze.setAllNodes()
 
 	if len(maze.nodePairs) != len(maze.matrix)*len(maze.matrix)-1 {
 		panic(errors.New("pair num is not correct"))
@@ -119,4 +121,14 @@ func setup() {
 	}
 	SceneRenderRect = rl.NewRectangle(0, 0, float32(SceneRenderTexture.Texture.Width), -float32(SceneRenderTexture.Texture.Height))
 	LoadModels()
+}
+
+func (m *Maze) setAllNodes() {
+	for _, row := range maze.matrix {
+		m.allNodes = append(m.allNodes, row...)
+	}
+
+	for _, pair := range maze.nodePairs {
+		m.allNodes = append(m.allNodes, pair.inBetween)
+	}
 }

@@ -13,6 +13,11 @@ const (
 	Right
 	Up
 	Down
+
+	OnLeft
+	OnRight
+	OnUp
+	OnDown
 )
 
 type Node struct {
@@ -43,6 +48,7 @@ type Maze struct {
 	origin    *Node
 	matrix    [][]*Node
 	nodePairs []PairNode
+	allNodes  []*Node
 	scale     int
 }
 
@@ -129,16 +135,7 @@ func (node *Node) removeOriginPointer() {
 }
 
 func (maze *Maze) draw() {
-	var allNodes []*Node
-	for _, row := range maze.matrix {
-		allNodes = append(allNodes, row...)
-	}
-
-	for _, pair := range maze.nodePairs {
-		allNodes = append(allNodes, pair.inBetween)
-	}
-
-	for _, node := range allNodes {
+	for _, node := range maze.allNodes {
 
 		rl.DrawCube(rl.NewVector3(float32(node.posX), 0, float32(node.posY)), 1.5, 1.5, 1.5, node.Color)
 
@@ -192,25 +189,40 @@ func (maze *Maze) drawWalls() {
 			switch n {
 			case 1:
 				switch dirs[0] {
-				case Left:
+				case Left, OnLeft:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-				case Right:
+				case Right, OnRight:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+0.5), 0, 0.5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
-				case Down:
+				case Down, OnDown:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
-				case Up:
+				case Up, OnUp:
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
 				}
 			}
 		}
+	}
+}
+
+func (node *Node) drawInBetweenWalls() {
+	nodePos := rl.NewVector3(float32(node.posX), 0, float32(node.posX))
+	_ = nodePos
+	if node.Left != nil || node.Right != nil {
+		node.Color = rl.Pink
+		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize+1.7, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((-2*wallSize)+0.7, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+	}
+	if node.Up != nil || node.Down != nil {
+		node.Color = rl.Beige
+		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize+1.7)), rl.NewVector3(0, 0, 0), scale)
+		// Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, (-2*wallSize)+0.7)), rl.NewVector3(0, 0, 0), scale)
 	}
 }
 
@@ -222,53 +234,46 @@ func (m *Maze) addInBetweenNode(pairNode PairNode) {
 
 	case Left:
 		node = &Node{
-			Left:  pair[1],
-			Right: pair[0],
-			posX:  (pair[0].posX + pair[1].posX) / 2,
-			posY:  (pair[0].posY + pair[1].posY) / 2,
+			Left:   pair[1],
+			OnLeft: pair[0],
+			posX:   (pair[0].posX + pair[1].posX) / 2,
+			posY:   (pair[0].posY + pair[1].posY) / 2,
 		}
-		pair[1].Right = node
 		pair[0].Left = node
-		node.OnRight = pair[1]
-		node.OnLeft = pair[0]
+		pair[1].OnRight = node
 
 	case Right:
 		node = &Node{
-			Left:  pair[0],
-			Right: pair[1],
-			posX:  (pair[0].posX + pair[1].posX) / 2,
-			posY:  (pair[0].posY + pair[1].posY) / 2,
+			OnRight: pair[0],
+			Right:   pair[1],
+			posX:    (pair[0].posX + pair[1].posX) / 2,
+			posY:    (pair[0].posY + pair[1].posY) / 2,
 		}
 		pair[0].Right = node
-		pair[1].Left = node
-		node.OnRight = pair[0]
-		node.OnLeft = pair[1]
+		pair[1].OnLeft = node
 
 	case Down:
 		node = &Node{
-			Up:   pair[0],
-			Down: pair[1],
-			posX: (pair[0].posX + pair[1].posX) / 2,
-			posY: (pair[0].posY + pair[1].posY) / 2,
+			OnDown: pair[0],
+			Down:   pair[1],
+			posX:   (pair[0].posX + pair[1].posX) / 2,
+			posY:   (pair[0].posY + pair[1].posY) / 2,
 		}
 		pair[0].Down = node
-		pair[1].Up = node
-		node.OnDown = pair[0]
-		node.OnUp = pair[1]
+		pair[1].OnUp = node
 
 	case Up:
 		node = &Node{
 			Up:   pair[1],
-			Down: pair[0],
+			OnUp: pair[0],
 			posX: (pair[0].posX + pair[1].posX) / 2,
 			posY: (pair[0].posY + pair[1].posY) / 2,
 		}
-		pair[1].Down = node
-		pair[0].Up = node
-		node.OnDown = pair[1]
-		node.OnUp = pair[0]
 
+		pair[0].Up = node
+		pair[1].OnDown = node
 	}
+
 	node.Color = rl.White
 	pairNode.inBetween = node
 	m.nodePairs = append(m.nodePairs, pairNode)
@@ -279,21 +284,13 @@ func (m *Maze) createNodePair(node *Node) {
 	for _, dir := range dirs {
 		switch dir {
 		case Left:
-			if node.OnLeft == nil {
-				m.addNodePair(node, node.Left, Left)
-			}
+			m.addNodePair(node, node.Left, Left)
 		case Right:
-			if node.OnRight == nil {
-				m.addNodePair(node, node.Right, Right)
-			}
+			m.addNodePair(node, node.Right, Right)
 		case Up:
-			if node.OnUp == nil {
-				m.addNodePair(node, node.Up, Up)
-			}
+			m.addNodePair(node, node.Up, Up)
 		case Down:
-			if node.OnDown == nil {
-				m.addNodePair(node, node.Down, Down)
-			}
+			m.addNodePair(node, node.Down, Down)
 
 		}
 	}
@@ -304,6 +301,12 @@ func (maze *Maze) createNodePairs() {
 		for _, node := range row {
 			maze.createNodePair(node)
 		}
+	}
+}
+
+func (maze *Maze) drawInBetweenWallPairs() {
+	for _, node := range maze.nodePairs {
+		node.inBetween.drawInBetweenWalls()
 	}
 }
 
@@ -367,34 +370,43 @@ func (node *Node) linkNum() ([]Direction, int) {
 	if node.Left != nil {
 		dirs = append(dirs, Left)
 		count++
-	} else if node.OnLeft != nil {
-		dirs = append(dirs, Left)
+	}
+
+	if node.OnLeft != nil {
+		dirs = append(dirs, OnLeft)
 		count++
 	}
 
 	if node.Right != nil {
 		dirs = append(dirs, Right)
 		count++
-	} else if node.OnRight != nil {
-		dirs = append(dirs, Right)
+	}
+
+	if node.OnRight != nil {
+		dirs = append(dirs, OnRight)
 		count++
 	}
 
 	if node.Down != nil {
 		dirs = append(dirs, Down)
 		count++
-	} else if node.OnDown != nil {
-		dirs = append(dirs, Down)
+	}
+
+	if node.OnDown != nil {
+		dirs = append(dirs, OnDown)
 		count++
 	}
 
 	if node.Up != nil {
 		dirs = append(dirs, Up)
 		count++
-	} else if node.OnUp != nil {
-		dirs = append(dirs, Up)
+	}
+
+	if node.OnUp != nil {
+		dirs = append(dirs, OnUp)
 		count++
 	}
+
 	switch count {
 	case 0:
 		node.Color = rl.DarkGray
