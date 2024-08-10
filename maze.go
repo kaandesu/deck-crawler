@@ -210,20 +210,30 @@ func (maze *Maze) drawWalls() {
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-2.45, 0, -(wallSize/2+0.55))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-2.45, 0, wallSize/2+0.55)), rl.NewVector3(0, 0, 0), scale)
 				}
+			case 2:
+				if includeDir(dirs, []Direction{Left, Down}) {
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, -5)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
+				} else if includeDir(dirs, []Direction{Left, Up}) {
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, -5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+				} else if includeDir(dirs, []Direction{Right, Down}) {
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, 5)), rl.NewVector3(0, 270*rl.Deg2rad, 0), scale)
+				} else if includeDir(dirs, []Direction{Right, Up}) {
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, 5)), rl.NewVector3(0, 0, 0), scale)
+				}
 			case 3:
-				if !includeDir(dirs, []Direction{Left, OnLeft}) {
+				if !includeDir(dirs, []Direction{Left}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, 5)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, 5)), rl.NewVector3(0, 270*rl.Deg2rad, 0), scale)
 					// TODO: add 2 more
-				} else if !includeDir(dirs, []Direction{Right, OnRight}) {
+				} else if !includeDir(dirs, []Direction{Right}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, -5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, -5)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
 					// TODO: add 2 more
-				} else if !includeDir(dirs, []Direction{Down, OnDown}) {
+				} else if !includeDir(dirs, []Direction{Down}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, 5)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, -5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					// TODO: add 2 more
-				} else if !includeDir(dirs, []Direction{Up, OnUp}) {
+				} else if !includeDir(dirs, []Direction{Up}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, -5)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, 5)), rl.NewVector3(0, 270*rl.Deg2rad, 0), scale)
 					// TODO: add 2 more
@@ -239,13 +249,38 @@ func (maze *Maze) drawWalls() {
 	}
 }
 
-func includeDir(dirs []Direction, testdirs []Direction) bool {
-	for _, d := range dirs {
-		if d == testdirs[0] || d == testdirs[1] {
-			return true
+func includeDir(dirs []Direction, directions []Direction) bool {
+	dirMap := make(map[Direction]bool)
+	for _, dir := range dirs {
+		dirMap[dir] = true
+	}
+
+	for _, direction := range directions {
+		switch direction {
+		case Left:
+			if !dirMap[Left] && !dirMap[OnLeft] {
+				return false
+			}
+		case Right:
+			if !dirMap[Right] && !dirMap[OnRight] {
+				return false
+			}
+		case Up:
+			if !dirMap[Up] && !dirMap[OnUp] {
+				return false
+			}
+		case Down:
+			if !dirMap[Down] && !dirMap[OnDown] {
+				return false
+			}
+		default:
+			if !dirMap[direction] {
+				return false
+			}
 		}
 	}
-	return false
+
+	return true
 }
 
 func (node *Node) drawInBetweenWalls() {
@@ -253,7 +288,6 @@ func (node *Node) drawInBetweenWalls() {
 	_ = nodePos
 	if node.Left != nil || node.Right != nil {
 		node.Color = rl.Pink
-		// FIXME: there is a little offset problem in both
 		Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(3.3-wallSize, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 		Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize)-3.3, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 	}
