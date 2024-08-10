@@ -12,14 +12,12 @@ type ModelType int32
 const (
 	Wall ModelType = iota
 	WallDoorway
+	WallCorner
 	Box
 )
 
 func (scene *Scene3D) AddModel(modelType ModelType, pos, rot rl.Vector3, scale float32) error {
-	var (
-		found = false
-		path  = ""
-	)
+	path := ""
 
 	uid := fmt.Sprintf("wall%d", len(scene.Items))
 	if _, e := scene.Items[uid]; e {
@@ -28,15 +26,14 @@ func (scene *Scene3D) AddModel(modelType ModelType, pos, rot rl.Vector3, scale f
 	switch modelType {
 	case Wall:
 		path = "./res/gltf/wall.gltf"
-		found = true
 	case WallDoorway:
 		path = "./res/gltf/wall_doorway.gltf"
-		found = true
+	case WallCorner:
+		path = "./res/gltf/wall_corner.gltf"
 	case Box:
 		path = "./res/gltf/box_large.gltf"
-		found = true
 	}
-	if !found {
+	if path == "" {
 		return errors.New("model key not found")
 	}
 

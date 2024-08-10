@@ -102,7 +102,7 @@ func setup() {
 	rl.SetTargetFPS(GameScreen.fps)
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
-	maze = CreateMatrix(5, 24)
+	maze = CreateMatrix(9, 24)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
 	}

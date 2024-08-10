@@ -206,6 +206,11 @@ func (maze *Maze) drawWalls() {
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, -(wallSize/2+0.5))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-0.5, 0, wallSize/2+0.5)), rl.NewVector3(0, 0, 0), scale)
 				}
+			case 4:
+				Scene.AddModel(WallCorner, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, 4.95)), rl.NewVector3(0, 0, 0), scale)
+				Scene.AddModel(WallCorner, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, -4.95)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+				Scene.AddModel(WallCorner, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, -4.95)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
+				Scene.AddModel(WallCorner, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, 4.95)), rl.NewVector3(0, 270*rl.Deg2rad, 0), scale)
 			}
 		}
 	}
