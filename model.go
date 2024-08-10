@@ -13,6 +13,7 @@ const (
 	Wall ModelType = iota
 	WallDoorway
 	WallCorner
+	WallCornerSmall
 	Box
 )
 
@@ -30,6 +31,8 @@ func (scene *Scene3D) AddModel(modelType ModelType, pos, rot rl.Vector3, scale f
 		path = "./res/gltf/wall_doorway.gltf"
 	case WallCorner:
 		path = "./res/gltf/wall_corner.gltf"
+	case WallCornerSmall:
+		path = "./res/gltf/wall_corner_small.gltf"
 	case Box:
 		path = "./res/gltf/box_large.gltf"
 	}
