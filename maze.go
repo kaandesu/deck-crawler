@@ -213,12 +213,20 @@ func (maze *Maze) drawWalls() {
 			case 2:
 				if includeDir(dirs, []Direction{Left, Down}) { // NOTE: yellow corners
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, -5)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2+0.6)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2-1.1, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				} else if includeDir(dirs, []Direction{Left, Up}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, -5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2+0.6)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2+1.1, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				} else if includeDir(dirs, []Direction{Right, Down}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, 5)), rl.NewVector3(0, 270*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2-1.1, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2-0.6)), rl.NewVector3(0, 0, 0), scale)
 				} else if includeDir(dirs, []Direction{Right, Up}) {
 					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, 5)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2-0.6)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2+1.1, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				} else if includeDir(dirs, []Direction{Right, Left}) { // NOTE: yellow non-corners
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(3.3-wallSize, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize)-3.3, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)

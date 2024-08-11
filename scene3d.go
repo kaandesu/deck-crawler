@@ -7,12 +7,10 @@ import (
 )
 
 func (s *Scene3D) render() {
-	rl.ClearBackground(rl.DarkGray)
+	rl.ClearBackground(rl.SkyBlue)
 	rl.BeginMode3D(*GameState.camera)
 
-	// rl.DrawPlane(rl.NewVector3(0, 0, 0), rl.NewVector2(32, 32), rl.DarkBrown)
-
-	maze.draw()
+	// maze.draw()
 
 	for _, item := range s.Items {
 		if item.hidden {
@@ -30,6 +28,8 @@ func (s *Scene3D) render() {
 			tint = rl.NewColor(0, 0, 0, 70)
 		}
 		rl.DrawModel(item.model, item.pos, item.scale, tint)
+		size := maze.scale * float32(len(maze.matrix))
+		rl.DrawPlane(rl.NewVector3(size/2-8, -0.0001, size/2-8), rl.NewVector2(size, size), rl.Gray)
 	}
 
 	// rl.DrawGrid(20, 8)
