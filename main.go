@@ -28,7 +28,7 @@ var (
 		editMode:           false,
 		editFull:           true,
 		editFocusedItemUid: "",
-		camMode:            rl.CameraThirdPerson,
+		camMode:            rl.CameraFirstPerson,
 	}
 	Scene = &Scene3D{
 		Items: make(map[string]*SceneItem),
@@ -49,7 +49,6 @@ func drawScene() {
 func main() {
 	flag.Parse()
 	if *enableEditorServer {
-		// TODO: use flag for the port no, default 3000
 		server := NewServer("127.0.0.1:3000")
 		go server.Start()
 	}
@@ -86,7 +85,9 @@ func render() {
 	rl.DrawTextureRec(SceneRenderTexture.Texture, SceneRenderRect, rl.NewVector2(GameStyle.padding, GameStyle.padding), rl.White)
 	rl.EndShaderMode()
 
-	rl.UpdateCamera(GameState.camera, GameState.camMode)
+	// rl.UpdateCamera(GameState.camera, GameState.camMode)
+	//
+	UpdateCameraCustom(GameState.camera)
 
 	rl.DrawFPS(GameScreen.width-90, GameScreen.height-30)
 	rl.EndDrawing()

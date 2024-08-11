@@ -41,7 +41,7 @@ func NewNode(x, y int, scale float32) *Node {
 type PairNode struct {
 	inBetween *Node
 	nodes     []*Node
-	dir       Direction // TODO: add onLeft etc dirs to the type
+	dir       Direction
 }
 
 type Maze struct {

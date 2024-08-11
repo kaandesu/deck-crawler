@@ -21,7 +21,6 @@ type Style struct {
 	roundness float32
 }
 
-// TODO: group edit related stuff in a single struct
 type State struct {
 	camera             *Camera
 	running            bool

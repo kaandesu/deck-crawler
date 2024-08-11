@@ -28,7 +28,6 @@ type keyMap struct {
 	CycleCamMode Binding
 }
 
-// TODO:Define help menu
 var keys = keyMap{
 	Back: NewBinding(
 		WithKeys("b", "back"),
