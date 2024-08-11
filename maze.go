@@ -190,25 +190,30 @@ func (maze *Maze) drawWalls() {
 			case 1:
 				switch dirs[0] {
 				case Left:
-					// TODO: add two corner wall
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, wallSize/2)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+1.1), 0, -2.45)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+1.1), 0, -2.45)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, 4.15)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, 4.15)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				case Right:
-					// TODO: add two corner wall
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(0, 0, -wallSize/2)), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-(wallSize/2+1.1), 0, 2.45)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3((wallSize/2+1.1), 0, 2.45)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(5.5, 0, -4.15)), rl.NewVector3(0, 0*rl.Deg2rad, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-5.5, 0, -4.15)), rl.NewVector3(0, -90*rl.Deg2rad, 0), scale)
 				case Down:
-					// TODO: add two corner wall
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(2.45, 0, -(wallSize/2+0.55))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(2.45, 0, wallSize/2+0.55)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-4.15, 0, 5)), rl.NewVector3(0, 180*rl.Deg2rad, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(-4.15, 0, -5)), rl.NewVector3(0, -90*rl.Deg2rad, 0), scale)
 				case Up:
 					// TODO: add two corner wall
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(wallSize/2, 0, 0)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-2.45, 0, -(wallSize/2+0.55))), rl.NewVector3(0, 0, 0), scale)
 					Scene.AddModel(Wall, rl.Vector3Add(nodePos, rl.NewVector3(-2.45, 0, wallSize/2+0.55)), rl.NewVector3(0, 0, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(4.15, 0, -5)), rl.NewVector3(0, 0*rl.Deg2rad, 0), scale)
+					Scene.AddModel(WallCornerSmall, rl.Vector3Add(nodePos, rl.NewVector3(4.15, 0, 5)), rl.NewVector3(0, 90*rl.Deg2rad, 0), scale)
 				}
 			case 2:
 				if includeDir(dirs, []Direction{Left, Down}) { // NOTE: yellow corners
