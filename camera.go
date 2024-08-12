@@ -1,16 +1,27 @@
 package main
 
 import (
+	"math"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Camera = rl.Camera3D
 
-func NewCamera() *Camera {
-	return &Camera{
-		Position:   rl.NewVector3(15.0, 5.0, 15.0),
-		Target:     rl.NewVector3(0.0, 0.0, 0.0),
-		Up:         rl.NewVector3(0.0, 1.0, 0.0),
+func NewCamera() *rl.Camera {
+	// Define the initial position
+	initialPosition := rl.NewVector3(15.0, 5.0, 15.0)
+	target := rl.NewVector3(0.0, 0.0, 0.0)
+	up := rl.NewVector3(0.0, 1.0, 0.0)
+
+	// Rotate the initial position by 45 degrees around the Y-axis (up vector)
+	var rotationAngle float32 = 45.0 * rl.Deg2rad
+	rotatedPosition := rotateAround(initialPosition, target, up, rotationAngle)
+
+	return &rl.Camera{
+		Position:   rotatedPosition,
+		Target:     target,
+		Up:         up,
 		Fovy:       50.0,
 		Projection: rl.CameraPerspective,
 	}
@@ -22,17 +33,11 @@ func MoveCam(cam *Camera, direction rl.Vector3) {
 }
 
 func UpdateCameraCustom(camera *rl.Camera) {
-	var (
-		moveSpeed   float32 = 0.2
-		rotateSpeed float32 = 2.0
-	)
+	var moveSpeed float32 = 0.2
 
 	forwardDir := rl.Vector3Subtract(camera.Target, camera.Position)
 	forwardDir.Y = 0
 	forwardDir = rl.Vector3Normalize(forwardDir)
-
-	rightDir := rl.Vector3CrossProduct(camera.Up, forwardDir)
-	rightDir = rl.Vector3Normalize(rightDir)
 
 	if rl.IsKeyDown(rl.KeyW) {
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
@@ -43,22 +48,21 @@ func UpdateCameraCustom(camera *rl.Camera) {
 		camera.Target = rl.Vector3Subtract(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
 	}
 
-	if rl.IsKeyDown(rl.KeyD) {
-		camera.Position = rl.Vector3Subtract(camera.Position, rl.Vector3Scale(rightDir, moveSpeed))
-		camera.Target = rl.Vector3Subtract(camera.Target, rl.Vector3Scale(rightDir, moveSpeed))
-	}
-	if rl.IsKeyDown(rl.KeyA) {
-		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(rightDir, moveSpeed))
-		camera.Target = rl.Vector3Add(camera.Target, rl.Vector3Scale(rightDir, moveSpeed))
-	}
+	// Handle rotation
+	if turningLeft || turningRight {
+		rotateStep := rotationSpeed * rl.GetFrameTime()
+		if turningRight {
+			rotateStep = -rotateStep
+		}
 
-	if rl.IsKeyDown(rl.KeyQ) {
-		rotateAngle := rotateSpeed * rl.GetFrameTime()
-		camera.Target = rotateAround(camera.Target, camera.Position, camera.Up, rotateAngle)
-	}
-	if rl.IsKeyDown(rl.KeyE) {
-		rotateAngle := -rotateSpeed * rl.GetFrameTime()
-		camera.Target = rotateAround(camera.Target, camera.Position, camera.Up, rotateAngle)
+		currentRotation += rotateStep
+		if float32(math.Abs(float64(currentRotation))) >= float32(math.Abs(float64(targetRotation))) {
+			rotateStep -= currentRotation - targetRotation
+			turningLeft, turningRight = false, false
+			inputBlocked = false
+		}
+
+		camera.Target = rotateAround(camera.Target, camera.Position, camera.Up, rotateStep*rl.Deg2rad)
 	}
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 	"golang.org/x/exp/rand"
@@ -28,7 +29,7 @@ var (
 		editMode:           false,
 		editFull:           true,
 		editFocusedItemUid: "",
-		camMode:            rl.CameraFirstPerson,
+		camMode:            rl.CameraThirdPerson,
 	}
 	Scene = &Scene3D{
 		Items: make(map[string]*SceneItem),
@@ -65,7 +66,47 @@ func main() {
 	defer rl.UnloadShader(renderShader)
 }
 
+var (
+	inputBlocked    bool
+	turningLeft     bool
+	turningRight    bool
+	targetRotation  float32
+	currentRotation float32
+	rotationSpeed   float32 = 90.0 // Degrees per second
+)
+
 func input() {
+	if rl.IsKeyDown(rl.KeyA) {
+		if inputBlocked {
+			return
+		}
+		turningLeft = true
+		targetRotation = 90.0 // Rotate 90 degrees
+		currentRotation = 0.0
+		blockInputs()
+	}
+
+	if rl.IsKeyDown(rl.KeyD) {
+		if inputBlocked {
+			return
+		}
+		turningRight = true
+		targetRotation = -90.0 // Rotate -90 degrees
+		currentRotation = 0.0
+		blockInputs()
+	}
+}
+
+func blockInputs() {
+	if !inputBlocked {
+		inputBlocked = true
+		go func() {
+			time.Sleep(time.Second * 1)
+			turningLeft = false
+			turningRight = false
+			inputBlocked = false
+		}()
+	}
 }
 
 func update() {
