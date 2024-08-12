@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -9,12 +10,13 @@ import (
 type Camera = rl.Camera3D
 
 func NewCamera() *rl.Camera {
-	// Define the initial position
-	initialPosition := rl.NewVector3(15.0, 5.0, 15.0)
+	node := maze.matrix[0][0]
+	fmt.Printf(">>>%+v \n", node)
+	// initialPosition := rl.NewVector3(15+node.posX, 45.0, 15+node.posY)
+	initialPosition := rl.NewVector3(15, 5.0, 15)
 	target := rl.NewVector3(0.0, 0.0, 0.0)
 	up := rl.NewVector3(0.0, 1.0, 0.0)
 
-	// Rotate the initial position by 45 degrees around the Y-axis (up vector)
 	var rotationAngle float32 = 45.0 * rl.Deg2rad
 	rotatedPosition := rotateAround(initialPosition, target, up, rotationAngle)
 
@@ -27,10 +29,7 @@ func NewCamera() *rl.Camera {
 	}
 }
 
-func MoveCam(cam *Camera, direction rl.Vector3) {
-	cam.Position = rl.Vector3Add(cam.Position, direction)
-	// cam.Target = rl.Vector3Add(cam.Target, direction)
-}
+var targetRotation float32
 
 func UpdateCameraCustom(camera *rl.Camera) {
 	var moveSpeed float32 = 0.2
@@ -39,20 +38,22 @@ func UpdateCameraCustom(camera *rl.Camera) {
 	forwardDir.Y = 0
 	forwardDir = rl.Vector3Normalize(forwardDir)
 
-	if rl.IsKeyDown(rl.KeyW) {
+	if movingForward {
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
 		camera.Target = rl.Vector3Add(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
 	}
-	if rl.IsKeyDown(rl.KeyS) {
+	if movingBackward {
 		camera.Position = rl.Vector3Subtract(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
 		camera.Target = rl.Vector3Subtract(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
 	}
 
-	// Handle rotation
 	if turningLeft || turningRight {
-		rotateStep := rotationSpeed * rl.GetFrameTime()
+		rotateStep := 90 * rl.GetFrameTime()
 		if turningRight {
+			targetRotation = -90
 			rotateStep = -rotateStep
+		} else {
+			targetRotation = 90
 		}
 
 		currentRotation += rotateStep
@@ -66,7 +67,6 @@ func UpdateCameraCustom(camera *rl.Camera) {
 	}
 }
 
-// rotateAround rotates a vector around an axis by a given angle.
 func rotateAround(target, position, axis rl.Vector3, angle float32) rl.Vector3 {
 	rotationMatrix := rl.MatrixRotate(axis, angle)
 	direction := rl.Vector3Subtract(target, position)

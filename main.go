@@ -25,7 +25,6 @@ var (
 	}
 	GameState = &State{
 		running:            true,
-		camera:             NewCamera(),
 		editMode:           false,
 		editFull:           true,
 		editFocusedItemUid: "",
@@ -70,9 +69,9 @@ var (
 	inputBlocked    bool
 	turningLeft     bool
 	turningRight    bool
-	targetRotation  float32
+	movingForward   bool
+	movingBackward  bool
 	currentRotation float32
-	rotationSpeed   float32 = 90.0 // Degrees per second
 )
 
 func input() {
@@ -81,7 +80,6 @@ func input() {
 			return
 		}
 		turningLeft = true
-		targetRotation = 90.0 // Rotate 90 degrees
 		currentRotation = 0.0
 		blockInputs()
 	}
@@ -91,8 +89,23 @@ func input() {
 			return
 		}
 		turningRight = true
-		targetRotation = -90.0 // Rotate -90 degrees
 		currentRotation = 0.0
+		blockInputs()
+	}
+
+	if rl.IsKeyDown(rl.KeyW) {
+		if inputBlocked {
+			return
+		}
+		movingForward = true
+		blockInputs()
+	}
+
+	if rl.IsKeyDown(rl.KeyS) {
+		if inputBlocked {
+			return
+		}
+		movingBackward = true
 		blockInputs()
 	}
 }
@@ -105,6 +118,8 @@ func blockInputs() {
 			turningLeft = false
 			turningRight = false
 			inputBlocked = false
+			movingForward = false
+			movingBackward = false
 		}()
 	}
 }
@@ -142,14 +157,16 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
 	}
 	maze.drawWalls()
 	maze.createNodePairs()
+	GameState.camera = NewCamera()
 	maze.setAllNodes()
 	maze.drawInBetweenWallPairs()
 
