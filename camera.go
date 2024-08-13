@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -11,13 +10,13 @@ type Camera = rl.Camera3D
 
 func NewCamera() *rl.Camera {
 	node := maze.matrix[0][0]
-	fmt.Printf(">>>%+v \n", node)
-	// initialPosition := rl.NewVector3(15+node.posX, 45.0, 15+node.posY)
-	initialPosition := rl.NewVector3(15, 5.0, 15)
-	target := rl.NewVector3(0.0, 0.0, 0.0)
+	// initialPosition := rl.NewVector3(node.posX+0.01, 5.0, node.posY+0.001)
+	node.Color = rl.Black
+	initialPosition := rl.NewVector3(0.01, 5.0, 0.01)
+	target := rl.NewVector3(0.01, 5.0, 0.0)
 	up := rl.NewVector3(0.0, 1.0, 0.0)
 
-	var rotationAngle float32 = 45.0 * rl.Deg2rad
+	var rotationAngle float32 = -180.0 * rl.Deg2rad
 	rotatedPosition := rotateAround(initialPosition, target, up, rotationAngle)
 
 	return &rl.Camera{
@@ -32,13 +31,14 @@ func NewCamera() *rl.Camera {
 var targetRotation float32
 
 func UpdateCameraCustom(camera *rl.Camera) {
-	var moveSpeed float32 = 0.2
+	var moveSpeed float32 = 0.14
 
 	forwardDir := rl.Vector3Subtract(camera.Target, camera.Position)
 	forwardDir.Y = 0
 	forwardDir = rl.Vector3Normalize(forwardDir)
 
 	if movingForward {
+		_ = moveSpeed
 		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
 		camera.Target = rl.Vector3Add(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
 	}

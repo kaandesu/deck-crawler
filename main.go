@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -28,7 +29,9 @@ var (
 		editMode:           false,
 		editFull:           true,
 		editFocusedItemUid: "",
-		camMode:            rl.CameraThirdPerson,
+		camMode:            rl.CameraFree,
+		lookDir:            Right,
+		currentNode:        &Node{},
 	}
 	Scene = &Scene3D{
 		Items: make(map[string]*SceneItem),
@@ -44,6 +47,18 @@ var renderShader rl.Shader
 
 func drawScene() {
 	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
+	dir := ""
+	switch GameState.lookDir {
+	case Left:
+		dir = "Left"
+	case Right:
+		dir = "Right"
+	case Up:
+		dir = "Up"
+	case Down:
+		dir = "Down"
+	}
+	rl.DrawText(fmt.Sprintf("[ %s -  %d ]", dir, GameState.lookDir), 100, GameScreen.height-50, 25, GameStyle.accent)
 }
 
 func main() {
@@ -79,15 +94,19 @@ func input() {
 		if inputBlocked {
 			return
 		}
+		GameState.lookDir = Direction((GameState.lookDir + 1) % 4)
 		turningLeft = true
 		currentRotation = 0.0
 		blockInputs()
 	}
 
 	if rl.IsKeyDown(rl.KeyD) {
+		return
 		if inputBlocked {
 			return
 		}
+		// FIXME: i don't like the below
+		// GameState.lookDir = (GameState.lookDir - 1) % 4
 		turningRight = true
 		currentRotation = 0.0
 		blockInputs()
@@ -97,7 +116,63 @@ func input() {
 		if inputBlocked {
 			return
 		}
-		movingForward = true
+
+		dirs := GameState.currentNode.linkNum()
+		switch GameState.lookDir {
+		case Left:
+			movingForward = includeDir(dirs, []Direction{Left})
+			if movingForward {
+				GameState.currentNode.Color = rl.Brown
+				if GameState.currentNode.Left != nil {
+					GameState.currentNode = GameState.currentNode.Left
+				} else {
+					GameState.currentNode = GameState.currentNode.OnLeft
+				}
+			}
+		case Right:
+			movingForward = includeDir(dirs, []Direction{Right})
+			if movingForward {
+				GameState.currentNode.Color = rl.Brown
+				if GameState.currentNode.Right != nil {
+					fmt.Println("went right")
+					GameState.currentNode = GameState.currentNode.Right
+					fmt.Printf(">> %+v \n", GameState.currentNode)
+				} else {
+					fmt.Println("went on right")
+					GameState.currentNode = GameState.currentNode.OnRight
+					fmt.Printf(">> %+v \n", GameState.currentNode)
+				}
+			}
+
+		case Up:
+			if GameState.currentNode.Up != nil {
+				GameState.currentNode.Color = rl.Brown
+				GameState.currentNode = GameState.currentNode.Up
+				movingForward = true
+			} else if GameState.currentNode.OnUp != nil {
+				GameState.currentNode.Color = rl.Brown
+				GameState.currentNode = GameState.currentNode.OnUp
+				movingForward = true
+			}
+
+		case Down:
+			if GameState.currentNode.Down != nil {
+				GameState.currentNode.Color = rl.Brown
+				GameState.currentNode = GameState.currentNode.Down
+				movingForward = true
+			} else if GameState.currentNode.OnDown != nil {
+				GameState.currentNode.Color = rl.Brown
+				GameState.currentNode = GameState.currentNode.OnDown
+				movingForward = true
+			}
+
+		}
+
+		if GameState.currentNode != nil {
+			GameState.currentNode.Color = rl.Black
+			fmt.Printf(">> %+v \n", GameState.currentNode)
+		}
+
 		blockInputs()
 	}
 
@@ -105,6 +180,7 @@ func input() {
 		if inputBlocked {
 			return
 		}
+		// TODO: add the thing
 		movingBackward = true
 		blockInputs()
 	}
@@ -114,7 +190,7 @@ func blockInputs() {
 	if !inputBlocked {
 		inputBlocked = true
 		go func() {
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 1000)
 			turningLeft = false
 			turningRight = false
 			inputBlocked = false
@@ -142,7 +218,7 @@ func render() {
 	rl.EndShaderMode()
 
 	// rl.UpdateCamera(GameState.camera, GameState.camMode)
-	//
+
 	UpdateCameraCustom(GameState.camera)
 
 	rl.DrawFPS(GameScreen.width-90, GameScreen.height-30)
@@ -154,12 +230,13 @@ func quit() {
 }
 
 func setup() {
+	rl.SetTraceLogLevel(rl.LogError)
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
@@ -168,6 +245,8 @@ func setup() {
 	maze.createNodePairs()
 	GameState.camera = NewCamera()
 	maze.setAllNodes()
+	GameState.currentNode = maze.matrix[0][0]
+
 	maze.drawInBetweenWallPairs()
 
 	if len(maze.nodePairs) != len(maze.matrix)*len(maze.matrix)-1 {
@@ -175,7 +254,7 @@ func setup() {
 	}
 
 	if *enableFullScreen {
-		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width, GameScreen.height)
+		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width*6/7, GameScreen.height*6/7)
 	} else {
 		SceneRenderTexture = rl.LoadRenderTexture(GameScreen.width/2, GameScreen.height/2+int32(GameStyle.padding)*2)
 	}

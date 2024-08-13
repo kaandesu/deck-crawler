@@ -9,10 +9,10 @@ import (
 type Direction int
 
 const (
-	Left Direction = iota
-	Right
-	Up
+	Right Direction = iota
 	Down
+	Left
+	Up
 
 	OnLeft
 	OnRight
@@ -184,9 +184,9 @@ func (maze *Maze) drawWalls() {
 	for _, row := range maze.matrix {
 		for _, node := range row {
 			node.linkIncoming()
-			dirs, n := node.linkNum()
+			dirs := node.linkNum()
 			nodePos := rl.NewVector3(float32(node.X)*maze.scale, 0, float32(node.Y)*maze.scale)
-			switch n {
+			switch len(dirs) {
 			case 1:
 				switch dirs[0] {
 				case Left:
@@ -328,40 +328,41 @@ func (m *Maze) addInBetweenNode(pairNode PairNode) {
 
 	case Left:
 		node = &Node{
-			Left:   pair[1],
-			OnLeft: pair[0],
-			posX:   (pair[0].posX + pair[1].posX) / 2,
-			posY:   (pair[0].posY + pair[1].posY) / 2,
+			Left:    pair[1],
+			OnRight: pair[0],
+			posX:    (pair[0].posX + pair[1].posX) / 2,
+			posY:    (pair[0].posY + pair[1].posY) / 2,
 		}
 		pair[0].Left = node
 		pair[1].OnRight = node
 
 	case Right:
 		node = &Node{
-			OnRight: pair[0],
-			Right:   pair[1],
-			posX:    (pair[0].posX + pair[1].posX) / 2,
-			posY:    (pair[0].posY + pair[1].posY) / 2,
+			OnLeft: pair[0],
+			Right:  pair[1],
+			posX:   (pair[0].posX + pair[1].posX) / 2,
+			posY:   (pair[0].posY + pair[1].posY) / 2,
 		}
 		pair[0].Right = node
+		pair[0].Color = rl.Pink
 		pair[1].OnLeft = node
 
 	case Down:
 		node = &Node{
-			OnDown: pair[0],
-			Down:   pair[1],
-			posX:   (pair[0].posX + pair[1].posX) / 2,
-			posY:   (pair[0].posY + pair[1].posY) / 2,
+			OnUp: pair[0],
+			Down: pair[1],
+			posX: (pair[0].posX + pair[1].posX) / 2,
+			posY: (pair[0].posY + pair[1].posY) / 2,
 		}
 		pair[0].Down = node
 		pair[1].OnUp = node
 
 	case Up:
 		node = &Node{
-			Up:   pair[1],
-			OnUp: pair[0],
-			posX: (pair[0].posX + pair[1].posX) / 2,
-			posY: (pair[0].posY + pair[1].posY) / 2,
+			Up:     pair[1],
+			OnDown: pair[0],
+			posX:   (pair[0].posX + pair[1].posX) / 2,
+			posY:   (pair[0].posY + pair[1].posY) / 2,
 		}
 
 		pair[0].Up = node
@@ -374,7 +375,7 @@ func (m *Maze) addInBetweenNode(pairNode PairNode) {
 }
 
 func (m *Maze) createNodePair(node *Node) {
-	dirs, _ := node.linkNum()
+	dirs := node.linkNum()
 	for _, dir := range dirs {
 		switch dir {
 		case Left:
@@ -455,7 +456,7 @@ func (node *Node) linkIncoming() {
 	}
 }
 
-func (node *Node) linkNum() ([]Direction, int) {
+func (node *Node) linkNum() []Direction {
 	var (
 		dirs  []Direction
 		count = 0
@@ -514,7 +515,7 @@ func (node *Node) linkNum() ([]Direction, int) {
 		node.Color = rl.Violet
 	}
 
-	return dirs, count
+	return dirs
 }
 
 func LinkNodes(a, b *Node, direction Direction) {

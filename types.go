@@ -28,6 +28,8 @@ type State struct {
 	editFull           bool
 	editFocusedItemUid string
 	camMode            rl.CameraMode
+	lookDir            Direction
+	currentNode        *Node
 }
 
 type SceneItem struct {
