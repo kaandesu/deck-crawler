@@ -101,6 +101,7 @@ func input() {
 	}
 
 	if rl.IsKeyDown(rl.KeyD) {
+		// TODO:Enable rotate right
 		return
 		if inputBlocked {
 			return
@@ -129,48 +130,44 @@ func input() {
 					GameState.currentNode = GameState.currentNode.OnLeft
 				}
 			}
+
 		case Right:
 			movingForward = includeDir(dirs, []Direction{Right})
 			if movingForward {
 				GameState.currentNode.Color = rl.Brown
 				if GameState.currentNode.Right != nil {
-					fmt.Println("went right")
 					GameState.currentNode = GameState.currentNode.Right
-					fmt.Printf(">> %+v \n", GameState.currentNode)
 				} else {
-					fmt.Println("went on right")
 					GameState.currentNode = GameState.currentNode.OnRight
-					fmt.Printf(">> %+v \n", GameState.currentNode)
 				}
 			}
 
 		case Up:
-			if GameState.currentNode.Up != nil {
+			movingForward = includeDir(dirs, []Direction{Up})
+			if movingForward {
 				GameState.currentNode.Color = rl.Brown
-				GameState.currentNode = GameState.currentNode.Up
-				movingForward = true
-			} else if GameState.currentNode.OnUp != nil {
-				GameState.currentNode.Color = rl.Brown
-				GameState.currentNode = GameState.currentNode.OnUp
-				movingForward = true
+				if GameState.currentNode.Up != nil {
+					GameState.currentNode = GameState.currentNode.Up
+				} else {
+					GameState.currentNode = GameState.currentNode.OnUp
+				}
 			}
 
 		case Down:
-			if GameState.currentNode.Down != nil {
+			movingForward = includeDir(dirs, []Direction{Down})
+			if movingForward {
 				GameState.currentNode.Color = rl.Brown
-				GameState.currentNode = GameState.currentNode.Down
-				movingForward = true
-			} else if GameState.currentNode.OnDown != nil {
-				GameState.currentNode.Color = rl.Brown
-				GameState.currentNode = GameState.currentNode.OnDown
-				movingForward = true
+				if GameState.currentNode.Down != nil {
+					GameState.currentNode = GameState.currentNode.Down
+				} else {
+					GameState.currentNode = GameState.currentNode.OnDown
+				}
 			}
 
 		}
 
 		if GameState.currentNode != nil {
 			GameState.currentNode.Color = rl.Black
-			fmt.Printf(">> %+v \n", GameState.currentNode)
 		}
 
 		blockInputs()
@@ -180,7 +177,7 @@ func input() {
 		if inputBlocked {
 			return
 		}
-		// TODO: add the thing
+		// TODO: chechk for the bound like above
 		movingBackward = true
 		blockInputs()
 	}
@@ -235,8 +232,8 @@ func setup() {
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
