@@ -101,13 +101,21 @@ func input() {
 	}
 
 	if rl.IsKeyDown(rl.KeyD) {
-		// TODO:Enable rotate right
-		return
 		if inputBlocked {
 			return
 		}
-		// FIXME: i don't like the below
-		// GameState.lookDir = (GameState.lookDir - 1) % 4
+
+		switch GameState.lookDir {
+		case Left:
+			GameState.lookDir = Down
+		case Right:
+			GameState.lookDir = Up
+		case Down:
+			GameState.lookDir = Right
+		case Up:
+			GameState.lookDir = Left
+		}
+
 		turningRight = true
 		currentRotation = 0.0
 		blockInputs()
