@@ -23,12 +23,19 @@ func NewCamera() *rl.Camera {
 		Position:   rotatedPosition,
 		Target:     target,
 		Up:         up,
-		Fovy:       50.0,
+		Fovy:       60.0,
 		Projection: rl.CameraPerspective,
 	}
 }
 
 var targetRotation float32
+
+var (
+	targetPos    rl.Vector3
+	moveDuration float32 = 150 // milliseconds
+	elapsedTime  float32 = 0
+	movingToNode bool    = false
+)
 
 func UpdateCameraCustom(camera *rl.Camera) {
 	var moveSpeed float32 = 0.14
@@ -37,14 +44,25 @@ func UpdateCameraCustom(camera *rl.Camera) {
 	forwardDir.Y = 0
 	forwardDir = rl.Vector3Normalize(forwardDir)
 
-	if movingForward {
-		_ = moveSpeed
-		camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
-		camera.Target = rl.Vector3Add(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
+	if movingToNode {
+		progress := elapsedTime / moveDuration
+
+		if progress < 1 {
+			camera.Position = rl.Vector3Lerp(camera.Position, targetPos, progress)
+			camera.Target = rl.Vector3Add(camera.Position, forwardDir)
+			elapsedTime += rl.GetFrameTime() * 1000
+		} else {
+			camera.Position = targetPos
+			movingForward = false
+			movingToNode = false
+			elapsedTime = 0
+		}
 	}
+
 	if movingBackward {
-		camera.Position = rl.Vector3Subtract(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
-		camera.Target = rl.Vector3Subtract(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
+		_ = moveSpeed
+		// camera.Position = rl.Vector3Subtract(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
+		// camera.Target = rl.Vector3Subtract(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
 	}
 
 	if turningLeft || turningRight {

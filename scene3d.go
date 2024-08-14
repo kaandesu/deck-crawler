@@ -10,7 +10,7 @@ func (s *Scene3D) render() {
 	rl.ClearBackground(rl.SkyBlue)
 	rl.BeginMode3D(*GameState.camera)
 
-	maze.draw()
+	// maze.draw()
 
 	for _, item := range s.Items {
 		if item.hidden {

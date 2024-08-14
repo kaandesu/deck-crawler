@@ -91,7 +91,7 @@ var (
 
 func input() {
 	if rl.IsKeyDown(rl.KeyA) {
-		if inputBlocked {
+		if inputBlocked || movingForward || movingBackward {
 			return
 		}
 		GameState.lookDir = Direction((GameState.lookDir + 1) % 4)
@@ -101,7 +101,7 @@ func input() {
 	}
 
 	if rl.IsKeyDown(rl.KeyD) {
-		if inputBlocked {
+		if inputBlocked || movingForward || movingBackward {
 			return
 		}
 
@@ -122,9 +122,10 @@ func input() {
 	}
 
 	if rl.IsKeyDown(rl.KeyW) {
-		if inputBlocked {
+		if movingForward || turningLeft || turningRight {
 			return
 		}
+		fmt.Println("not block w")
 
 		dirs := GameState.currentNode.linkNum()
 		switch GameState.lookDir {
@@ -174,18 +175,18 @@ func input() {
 
 		}
 
-		if GameState.currentNode != nil {
-			GameState.currentNode.Color = rl.Black
+		if movingForward {
+			targetPos = rl.NewVector3(GameState.currentNode.posX, GameState.camera.Position.Y, GameState.currentNode.posY)
+			movingToNode = true
+			elapsedTime = 0
 		}
 
-		blockInputs()
 	}
 
 	if rl.IsKeyDown(rl.KeyS) {
-		if inputBlocked {
+		if movingForward || turningLeft || turningRight {
 			return
 		}
-		// TODO: chechk for the bound like above
 		movingBackward = true
 		blockInputs()
 	}
@@ -199,7 +200,6 @@ func blockInputs() {
 			turningLeft = false
 			turningRight = false
 			inputBlocked = false
-			movingForward = false
 			movingBackward = false
 		}()
 	}
@@ -239,8 +239,8 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
