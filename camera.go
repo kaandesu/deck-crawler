@@ -9,9 +9,6 @@ import (
 type Camera = rl.Camera3D
 
 func NewCamera() *rl.Camera {
-	node := maze.matrix[0][0]
-	// initialPosition := rl.NewVector3(node.posX+0.01, 5.0, node.posY+0.001)
-	node.Color = rl.Black
 	initialPosition := rl.NewVector3(0.01, 5.0, 0.01)
 	target := rl.NewVector3(0.01, 5.0, 0.0)
 	up := rl.NewVector3(0.0, 1.0, 0.0)
@@ -32,27 +29,31 @@ var targetRotation float32
 
 var (
 	targetPos    rl.Vector3
-	moveDuration float32 = 150 // milliseconds
 	elapsedTime  float32 = 0
 	movingToNode bool    = false
 )
 
 func UpdateCameraCustom(camera *rl.Camera) {
-	var moveSpeed float32 = 0.14
+	var moveSpeed float32 = 0.04
 
 	forwardDir := rl.Vector3Subtract(camera.Target, camera.Position)
 	forwardDir.Y = 0
 	forwardDir = rl.Vector3Normalize(forwardDir)
 
 	if movingToNode {
-		progress := elapsedTime / moveDuration
+		movementDir := rl.Vector3Subtract(targetPos, camera.Position)
+		movementDir.Y = 0
+		distance := rl.Vector3Length(movementDir)
 
-		if progress < 1 {
-			camera.Position = rl.Vector3Lerp(camera.Position, targetPos, progress)
+		movementDir = rl.Vector3Normalize(movementDir)
+		moveStep := moveSpeed * rl.GetFrameTime() * 1000
+
+		if distance > moveStep {
+			camera.Position = rl.Vector3Add(camera.Position, rl.Vector3Scale(movementDir, moveStep))
 			camera.Target = rl.Vector3Add(camera.Position, forwardDir)
-			elapsedTime += rl.GetFrameTime() * 1000
 		} else {
 			camera.Position = targetPos
+			camera.Target = rl.Vector3Add(camera.Position, forwardDir)
 			movingForward = false
 			movingToNode = false
 			elapsedTime = 0
@@ -60,13 +61,11 @@ func UpdateCameraCustom(camera *rl.Camera) {
 	}
 
 	if movingBackward {
-		_ = moveSpeed
-		// camera.Position = rl.Vector3Subtract(camera.Position, rl.Vector3Scale(forwardDir, moveSpeed))
-		// camera.Target = rl.Vector3Subtract(camera.Target, rl.Vector3Scale(forwardDir, moveSpeed))
+		// TODO: implement here
 	}
 
 	if turningLeft || turningRight {
-		rotateStep := 90 * rl.GetFrameTime()
+		rotateStep := 180 * rl.GetFrameTime()
 		if turningRight {
 			targetRotation = -90
 			rotateStep = -rotateStep

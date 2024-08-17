@@ -125,7 +125,6 @@ func input() {
 		if movingForward || turningLeft || turningRight {
 			return
 		}
-		fmt.Println("not block w")
 
 		dirs := GameState.currentNode.linkNum()
 		switch GameState.lookDir {
@@ -178,7 +177,6 @@ func input() {
 		if movingForward {
 			targetPos = rl.NewVector3(GameState.currentNode.posX, GameState.camera.Position.Y, GameState.currentNode.posY)
 			movingToNode = true
-			elapsedTime = 0
 		}
 
 	}
@@ -187,8 +185,6 @@ func input() {
 		if movingForward || turningLeft || turningRight {
 			return
 		}
-		movingBackward = true
-		blockInputs()
 	}
 }
 
@@ -196,7 +192,7 @@ func blockInputs() {
 	if !inputBlocked {
 		inputBlocked = true
 		go func() {
-			time.Sleep(time.Millisecond * 1000)
+			time.Sleep(time.Millisecond * 500)
 			turningLeft = false
 			turningRight = false
 			inputBlocked = false
@@ -239,9 +235,9 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
