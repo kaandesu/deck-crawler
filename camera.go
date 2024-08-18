@@ -55,13 +55,11 @@ func UpdateCameraCustom(camera *rl.Camera) {
 			camera.Position = targetPos
 			camera.Target = rl.Vector3Add(camera.Position, forwardDir)
 			movingForward = false
+			movingBackward = false
 			movingToNode = false
 			elapsedTime = 0
 		}
-	}
 
-	if movingBackward {
-		// TODO: implement here
 	}
 
 	if turningLeft || turningRight {

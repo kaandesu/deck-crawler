@@ -122,7 +122,7 @@ func input() {
 	}
 
 	if rl.IsKeyDown(rl.KeyW) {
-		if movingForward || turningLeft || turningRight {
+		if movingToNode || turningLeft || turningRight {
 			return
 		}
 
@@ -182,9 +182,63 @@ func input() {
 	}
 
 	if rl.IsKeyDown(rl.KeyS) {
-		if movingForward || turningLeft || turningRight {
+		if movingToNode || turningLeft || turningRight {
 			return
 		}
+
+		dirs := GameState.currentNode.linkNum()
+		switch GameState.lookDir {
+		case Right:
+			movingBackward = includeDir(dirs, []Direction{Left})
+			if movingBackward {
+				GameState.currentNode.Color = rl.Brown
+				if GameState.currentNode.Left != nil {
+					GameState.currentNode = GameState.currentNode.Left
+				} else {
+					GameState.currentNode = GameState.currentNode.OnLeft
+				}
+			}
+
+		case Left:
+			movingBackward = includeDir(dirs, []Direction{Right})
+			if movingBackward {
+				GameState.currentNode.Color = rl.Brown
+				if GameState.currentNode.Right != nil {
+					GameState.currentNode = GameState.currentNode.Right
+				} else {
+					GameState.currentNode = GameState.currentNode.OnRight
+				}
+			}
+
+		case Down:
+			movingBackward = includeDir(dirs, []Direction{Up})
+			if movingBackward {
+				GameState.currentNode.Color = rl.Brown
+				if GameState.currentNode.Up != nil {
+					GameState.currentNode = GameState.currentNode.Up
+				} else {
+					GameState.currentNode = GameState.currentNode.OnUp
+				}
+			}
+
+		case Up:
+			movingBackward = includeDir(dirs, []Direction{Down})
+			if movingBackward {
+				GameState.currentNode.Color = rl.Brown
+				if GameState.currentNode.Down != nil {
+					GameState.currentNode = GameState.currentNode.Down
+				} else {
+					GameState.currentNode = GameState.currentNode.OnDown
+				}
+			}
+
+		}
+
+		if movingBackward {
+			targetPos = rl.NewVector3(GameState.currentNode.posX, GameState.camera.Position.Y, GameState.currentNode.posY)
+			movingToNode = true
+		}
+
 	}
 }
 
@@ -236,8 +290,8 @@ func setup() {
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
 	for range len(maze.matrix) * len(maze.matrix) * 11 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
