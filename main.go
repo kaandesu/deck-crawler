@@ -272,8 +272,6 @@ func render() {
 	rl.DrawTextureRec(SceneRenderTexture.Texture, SceneRenderRect, rl.NewVector2(GameStyle.padding, GameStyle.padding), rl.White)
 	rl.EndShaderMode()
 
-	// rl.UpdateCamera(GameState.camera, GameState.camMode)
-
 	UpdateCameraCustom(GameState.camera)
 
 	rl.DrawFPS(GameScreen.width-90, GameScreen.height-30)

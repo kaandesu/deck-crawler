@@ -2,7 +2,7 @@
 
 **Deck Crawler** is a unique blend of deck-building and first-person dungeon crawling. Navigate procedurally generated dungeons using a strategic deck of cards to combat enemies, gather loot, and overcome challenges.
 
-🚧 there is noting here yet 🚧
+🚧 There is no game, just maze generation and movement (see game design below and photos for progress) 🚧
 
 TCP editor server:
 
@@ -52,10 +52,12 @@ Starting this hobby project to add slowly the game design elements mentioned bel
   <a href="https://github.com/kaandesu/deck-crawler">
     <img src="public/wip.png" alt="Logo" width="400">
   </a>
+<video width="320" height="240" controls>
+  <source src="public/gp.mov" type="video/mp4">
+</video>
   <a href="https://github.com/kaandesu/deck-crawler">
-    <img src="public/maze.png" alt="maze" width="400">
+    <img src="public/maze.png" alt="maze" width="400">mp4
   </a>
-  <small>WIP</small>
 </div>
 <br>
 
