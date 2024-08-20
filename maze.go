@@ -21,6 +21,7 @@ const (
 )
 
 type Node struct {
+	Spawner                       EnemySpawner
 	Left, Right, Up, Down         *Node
 	OnLeft, OnRight, OnUp, OnDown *Node
 	X, Y                          int
@@ -28,6 +29,12 @@ type Node struct {
 	Color                         color.RGBA
 }
 
+// TODO: define respawn interval
+type EnemySpawner struct {
+	Enemy *Enemy
+}
+
+// TODO: Add EnemySpawner randomaly with a seed
 func NewNode(x, y int, scale float32) *Node {
 	return &Node{
 		X:     x,

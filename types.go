@@ -43,5 +43,8 @@ type SceneItem struct {
 }
 
 type Scene3D struct {
-	Items map[string]*SceneItem
+	Items   map[string]*SceneItem
+	Enemies Enemies
 }
+
+type Enemies = map[EnemyType]Enemy
