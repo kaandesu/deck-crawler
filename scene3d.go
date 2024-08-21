@@ -32,6 +32,11 @@ func (s *Scene3D) render() {
 		rl.DrawPlane(rl.NewVector3(size/2-8, -0.0001, size/2-8), rl.NewVector2(size, size), rl.Gray)
 	}
 
-	rl.DrawBillboard(*GameState.camera, dummy, rl.NewVector3(0, 3, 26.4), 6.0, rl.White)
+	for _, node := range maze.allNodes {
+		if node.Spawner.Enemy != nil {
+			rl.DrawBillboard(*GameState.camera, node.Spawner.Enemy.Texture, rl.NewVector3(node.posX, 3, node.posY), 6.0, rl.White)
+		}
+	}
+
 	rl.EndMode3D()
 }

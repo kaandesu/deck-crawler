@@ -18,6 +18,7 @@ const (
 )
 
 type Enemy struct {
+	TexturePath      string
 	AttackRange      []float32
 	Health           float32
 	Defence          float32
@@ -27,13 +28,14 @@ type Enemy struct {
 }
 
 // TODO: load texture on setup()
-func DefineEnemy(enemyType EnemyType, atkRange []float32, health, defence float32) Enemy {
+func DefineEnemy(enemyType EnemyType, atkRange []float32, health, defence float32, path string) Enemy {
 	return Enemy{
 		Type:             enemyType,
 		Health:           health,
 		AttackRange:      atkRange,
 		Defence:          defence,
 		CurrentIntention: Neutral,
+		Texture:          rl.LoadTexture(path),
 	}
 }
 

@@ -35,10 +35,6 @@ var (
 	}
 	Scene = &Scene3D{
 		Items: make(map[string]*SceneItem),
-		Enemies: map[EnemyType]Enemy{
-			Slime:    DefineEnemy(Slime, []float32{1, 2}, 5, 0),
-			NotSlime: DefineEnemy(NotSlime, []float32{1, 2}, 5, 0),
-		},
 	}
 	enableEditorServer = flag.Bool("server", false, "enable editor server")
 	enableFullScreen   = flag.Bool("full", false, "enable full screen for editing")
@@ -48,8 +44,6 @@ var (
 )
 
 var renderShader rl.Shader
-
-var dummy rl.Texture2D
 
 func drawScene() {
 	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
@@ -293,7 +287,6 @@ func setup() {
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
-	dummy = rl.LoadTexture("./res/imgs/billboard.png")
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
 	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
@@ -306,6 +299,15 @@ func setup() {
 	GameState.camera = NewCamera()
 	maze.setAllNodes()
 	GameState.currentNode = maze.matrix[0][0]
+
+	Scene.Enemies = map[EnemyType]Enemy{
+		Slime:    DefineEnemy(Slime, []float32{1, 2}, 5, 0, "./res/imgs/billboard.png"),
+		NotSlime: DefineEnemy(NotSlime, []float32{1, 2}, 5, 0, "./res/imgs/billboard.png"),
+	}
+
+	// TODO: delete below and generate random
+	maze.matrix[0][2].SetSpawner(Slime)
+	maze.matrix[0][4].SetSpawner(Slime)
 
 	maze.drawInBetweenWallPairs()
 
