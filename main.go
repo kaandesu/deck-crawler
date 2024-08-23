@@ -1,5 +1,9 @@
 package main
 
+// TODO:
+// - block movement forward / backward if next has an enemy
+// - spawn enemy after a minute
+
 import (
 	"errors"
 	"flag"
@@ -46,7 +50,6 @@ var (
 var renderShader rl.Shader
 
 func drawScene() {
-	rl.DrawText("Deck Crawler!", GameScreen.width/2+int32(GameStyle.padding)*2, int32(GameStyle.padding), 45, GameStyle.accent)
 	dir := ""
 	switch GameState.lookDir {
 	case Left:
@@ -61,14 +64,17 @@ func drawScene() {
 	rl.DrawText(fmt.Sprintf("[ %s -  %d ] --- %+v", dir, GameState.lookDir, GameState.camera.Position), 100, GameScreen.height-50, 25, GameStyle.accent)
 }
 
+var shader rl.Shader
+
 func main() {
 	flag.Parse()
 	if *enableEditorServer {
 		server := NewServer("127.0.0.1:3000")
 		go server.Start()
 	}
-
+	rl.SetConfigFlags(rl.FlagMsaa4xHint)
 	setup()
+
 	for GameState.running {
 		input()
 		update()
@@ -78,6 +84,16 @@ func main() {
 	defer quit()
 	defer rl.UnloadRenderTexture(SceneRenderTexture)
 	defer rl.UnloadShader(renderShader)
+	defer rl.UnloadShader(shader)
+	defer unloadEnemyTextures()
+	defer rl.UnloadModel(ground)
+	defer rl.UnloadModel(testCube)
+}
+
+func unloadEnemyTextures() {
+	for _, enemy := range Scene.Enemies {
+		rl.UnloadTexture(enemy.Texture)
+	}
 }
 
 var (
@@ -90,6 +106,23 @@ var (
 )
 
 func input() {
+	if rl.IsKeyPressed(rl.KeyY) {
+		lights[0].enabled *= -1
+	}
+	if rl.IsKeyPressed(rl.KeyR) {
+		lights[1].enabled *= -1
+	}
+	if rl.IsKeyPressed(rl.KeyG) {
+		lights[2].enabled *= -1
+	}
+	if rl.IsKeyPressed(rl.KeyB) {
+		lights[3].enabled *= -1
+	}
+
+	for i := 0; i < len(lights); i++ {
+		lights[i].UpdateValues()
+	}
+
 	if rl.IsKeyDown(rl.KeyA) {
 		if inputBlocked || movingForward || movingBackward {
 			return
@@ -282,16 +315,41 @@ func quit() {
 	rl.CloseWindow()
 }
 
+var lights []Light
+
 func setup() {
 	rl.SetTraceLogLevel(rl.LogError)
 	rl.InitWindow(GameScreen.width, GameScreen.height, GameScreen.title)
 	rl.SetExitKey(0)
 	rl.SetTargetFPS(GameScreen.fps)
+
+	ground = rl.LoadModelFromMesh(rl.GenMeshPlane(10, 10, 3, 3))
+	shader = rl.LoadShader("./res/shaders/glsl330/lighting.vs", "./res/shaders/glsl330/lighting.fs")
+	*shader.Locs = rl.GetShaderLocation(shader, "viewPos")
+	ambientLoc := rl.GetShaderLocation(shader, "ambient")
+	shaderValue := []float32{0.1, 0.1, 0.1, 1.0}
+	rl.SetShaderValue(shader, ambientLoc, shaderValue, rl.ShaderUniformVec4)
+	ground.Materials.Shader = shader
+
+	testCube = rl.LoadModelFromMesh(rl.GenMeshCube(3, 3, 3))
+	testCube.Materials.Shader = shader
+
+	lights = make([]Light, 4)
+	lights[0] = NewLight(LightTypePoint, rl.NewVector3(0, 3, 30), rl.NewVector3(0, 0, 0), rl.Yellow, shader)
+	lights[1] = NewLight(LightTypePoint, rl.NewVector3(0, 3, 40), rl.NewVector3(0, 0, 0), rl.Red, shader)
+	lights[2] = NewLight(LightTypePoint, rl.NewVector3(0, 3, 60), rl.NewVector3(0, 0, 0), rl.Green, shader)
+	lights[3] = NewLight(LightTypePoint, rl.NewVector3(0, 3, 50), rl.NewVector3(0, 0, 0), rl.Blue, shader)
+
+	Scene.Enemies = map[EnemyType]Enemy{
+		Slime:    DefineEnemy(Slime, []float32{1, 2}, 5, 0, "./res/imgs/billboard.png"),
+		NotSlime: DefineEnemy(NotSlime, []float32{1, 2}, 5, 0, "./res/imgs/billboard.png"),
+	}
+
 	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/cross_stitching.fs")
-	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
-	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
+	// renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/pixelizer.fs")
+	renderShader = rl.LoadShader("./res/shaders/glsl330/base.vs", "./res/shaders/glsl330/base.fs")
 	maze = CreateMatrix(5, 17.6)
-	for range len(maze.matrix) * len(maze.matrix) * 11 {
+	for range len(maze.matrix) * len(maze.matrix) * 12 {
 		maze.walkOrigin(Direction(rand.Intn(4)))
 	}
 	maze.drawWalls()
@@ -300,17 +358,9 @@ func setup() {
 	maze.setAllNodes()
 	GameState.currentNode = maze.matrix[0][0]
 
-	Scene.Enemies = map[EnemyType]Enemy{
-		Slime:    DefineEnemy(Slime, []float32{1, 2}, 5, 0, "./res/imgs/billboard.png"),
-		NotSlime: DefineEnemy(NotSlime, []float32{1, 2}, 5, 0, "./res/imgs/billboard.png"),
-	}
-
-	// TODO: delete below and generate random
-	maze.matrix[0][2].SetSpawner(Slime)
-	maze.matrix[0][4].SetSpawner(Slime)
-
 	maze.drawInBetweenWallPairs()
 
+	// TODO: change this with assert
 	if len(maze.nodePairs) != len(maze.matrix)*len(maze.matrix)-1 {
 		panic(errors.New("pair num is not correct"))
 	}

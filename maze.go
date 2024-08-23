@@ -2,6 +2,7 @@ package main
 
 import (
 	"image/color"
+	"math/rand"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -34,15 +35,24 @@ type EnemySpawner struct {
 	Enemy *Enemy
 }
 
-// TODO: Add EnemySpawner randomaly with a seed
 func NewNode(x, y int, scale float32) *Node {
-	return &Node{
+	node := &Node{
 		X:     x,
 		Y:     y,
 		posX:  float32(x) * scale,
 		posY:  float32(y) * scale,
 		Color: rl.Black,
 	}
+
+	if r := rand.Intn(10); r < 6 && r >= 1 && x != 0 && y != 0 {
+		if rand.Intn(3) == 1 {
+			node.SetSpawner(NotSlime)
+		} else {
+			node.SetSpawner(Slime)
+		}
+	}
+
+	return node
 }
 
 type PairNode struct {

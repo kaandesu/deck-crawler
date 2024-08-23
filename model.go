@@ -42,6 +42,7 @@ func (scene *Scene3D) AddModel(modelType ModelType, pos, rot rl.Vector3, scale f
 
 	temp := rl.LoadModel(path)
 	temp.Transform = rl.MatrixRotateXYZ(rot)
+	temp.Materials.Shader = shader
 	scene.Items[uid] = &SceneItem{
 		uid:   uid,
 		model: temp,
